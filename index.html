@@ -1,0 +1,3608 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title> - js13k 2022 - </title>
+    <style>
+        * { background: #000000; padding: 0; margin: 0; }
+        canvas { background: rgb(0, 0, 0); display: block; margin: 0 auto;}
+    </style>
+</head>
+<body>
+
+<canvas id="myCanvas" width="800" height="720" ></canvas>
+
+<script>
+//////////////////////////////////////////////////////////////////////////////
+//variáveis
+
+var canvas = document.getElementById("myCanvas");
+var ctx = canvas.getContext("2d");
+// canvas.width = window.innerWidth;
+// canvas.height= window.innerHeight;
+
+var preSetupCarregado = false;
+var fim = false;
+
+var txtY = -100;
+var cenaCarregada = false;
+var podeEnter = false;
+var podeCriarCarta = true;
+
+var chao = canvas.height - 300;
+pltAlturasOcupadas = [0, 0, 0];
+var forcaVento = 1;
+var forcaVentoJogador = 1;
+var perseguir = true;
+var tempoPassa = true;
+
+var gameoverY = -100; // gameover
+var coletados = 0;
+var coletadosTotal = 100;
+var quems = [];
+var moedasMax = 13;
+var corFundo = 1;
+var cartaAnterior = 10;
+var extra = 3;
+
+var idade = 0;
+var idadeT = 0;
+
+var pagina = 0;
+var tEspera = 0;
+var tEspera2 = 0;
+var moedasContaTmp = 0;
+var paralax = 0;
+
+var t_inicial = 0;
+var t_final = 0;
+var t_flag = false;
+var clockSegundos = 0;
+
+var rightPressed = false;
+var leftPressed = false;
+var upPressed = false;
+var downPressed = false;
+var enterPressed = false;
+var espacoSolto = false;
+var xPressed = false;
+var zPressed = false;
+
+//////////////////////////////////////////////////////////////////////////////
+// variáveis para os sons
+
+var podeMusica = false;
+var abaixaSom = false;
+var temaMudo = [];
+var tema01 = [];
+
+var notas = {
+    'do0': 16.35,
+    'do#0': 17.32,
+    'reb0': 17.32,
+    're0': 18.35,
+    're#0': 19.45,
+    'mib0': 19.45,
+    'mi0': 20.60,
+    'fa0': 21.83,
+    'fa#0': 23.12,
+    'solb0': 23.12,
+    'sol0': 24.50,
+    'sol#0': 25.96,
+    'lab0': 25.96,
+    'la0': 27.50,
+    'la#0': 29.14,
+    'sib0': 29.14,
+    'si0': 30.87,
+    'do1': 32.70,
+    'do#1': 34.65,
+    'reb1': 34.65,
+    're1': 36.71,
+    're#1': 38.89,
+    'mib1': 38.89,
+    'mi1': 41.20,
+    'fa1': 43.65,
+    'fa#1': 46.25,
+    'solb1': 46.25,
+    'sol1': 49.00,
+    'sol#1': 51.91,
+    'lab1': 51.91,
+    'la1': 55.00,
+    'la#1': 58.27,
+    'sib1': 58.27,
+    'si1': 61.74,
+    'do2': 65.41,
+    'do#2': 69.30,
+    'reb2': 69.30,
+    're2': 73.42,
+    're#2': 77.78,
+    'mib2': 77.78,
+    'mi2': 82.41,
+    'fa2': 87.31,
+    'fa#2': 92.50,
+    'solb2': 92.50,
+    'sol2': 98.00,
+    'sol#2': 103.83,
+    'lab2': 103.83,
+    'la2': 110.00,
+    'la#2': 116.54,
+    'sib2': 116.54,
+    'si2': 123.47,
+    'do3': 130.81,
+    'do#3': 138.59,
+    'reb3': 138.59,
+    're3': 146.83,
+    're#3': 155.56,
+    'mib3': 155.56,
+    'mi3': 164.81,
+    'fa3': 174.61,
+    'fa#3': 185.00,
+    'solb3': 185.00,
+    'sol3': 196.00,
+    'sol#3': 207.65,
+    'lab3': 207.65,
+    'la3': 220.00,
+    'la#3': 233.08,
+    'sib3': 233.08,
+    'si3': 246.94,
+    'do4': 261.63,
+    'do#4': 277.18,
+    'reb4': 277.18,
+    're4': 293.66,
+    're#4': 311.13,
+    'mib4': 311.13,
+    'mi4': 329.63,
+    'fa4': 349.23,
+    'fa#4': 369.99,
+    'solb4': 369.99,
+    'sol4': 392.00,
+    'sol#4': 415.30,
+    'lab4': 415.30,
+    'la4': 440.00,
+    'la#4': 466.16,
+    'sib4': 466.16,
+    'si4': 493.88,
+    'do5': 523.25,
+    'do#5': 554.37,
+    'reb5': 554.37,
+    're5': 587.33,
+    're#5': 622.25,
+    'mib5': 622.25,
+    'mi5': 659.26,
+    'fa5': 698.46,
+    'fa#5': 739.99,
+    'solb5': 739.99,
+    'sol5': 783.99,
+    'sol#5': 830.61,
+    'lab5': 830.61,
+    'la5': 880.00,
+    'la#5': 932.33,
+    'sib5': 932.33,
+    'si5': 987.77,
+    'do6': 1046.50,
+    'do#6': 1108.73,
+    'reb6': 1108.73,
+    're6': 1174.66,
+    're#6': 1244.51,
+    'mib6': 1244.51,
+    'mi6': 1318.51,
+    'fa6': 1396.91,
+    'fa#6': 1479.98,
+    'solb6': 1479.98,
+    'sol6': 1567.98,
+    'sol#6': 1661.22,
+    'lab6': 1661.22,
+    'la6': 1760.00,
+    'la#6': 1864.66,
+    'sib6': 1864.66,
+    'si6': 1975.53,
+    'do7': 2093.00,
+    'do#7': 2217.46,
+    'reb7': 2217.46,
+    're7': 2349.32,
+    're#7': 2489.02,
+    'mib7': 2489.02,
+    'mi7': 2637.02,
+    'fa7': 2793.83,
+    'fa#7': 2959.96,
+    'solb7': 2959.96,
+    'sol7': 3135.96,
+    'sol#7': 3322.44,
+    'lab7': 3322.44,
+    'la7': 3520.00,
+    'la#7': 3729.31,
+    'sib7': 3729.31,
+    'si7': 3951.07,
+    'do8': 4186.01
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Sprites
+
+
+//////////////////////////////////////////////////////////////////////////////
+// sistema
+
+paleta = {
+    01: '#9bbc0f',
+    02: '#8bac0f',
+    03: '#306230',
+    04: '#0f380f',
+}
+
+////////////////////////////////////////////
+// jogador
+
+spr_jogador =
+[
+  [ // frame 1
+  [ 0, 0, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 4, 4, 2, 2, 4, 4, 0 ],
+  [ 4, 4, 2, 2, 2, 2, 4, 0 ],
+  [ 4, 2, 2, 2, 3, 2, 4, 0 ],
+  [ 4, 4, 2, 2, 2, 2, 4, 0 ],
+  [ 0, 4, 4, 2, 4, 4, 4, 0 ],
+  [ 0, 0, 4, 4, 4, 0, 0, 0 ],
+  [ 0, 4, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 3, 3, 3, 2, 4, 0, 0 ],
+  [ 0, 0, 4, 4, 4, 4, 3, 2 ],
+  [ 0, 0, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 0, 3, 3, 3, 3, 0, 0 ],
+  [ 0, 0, 3, 0, 0, 3, 0, 0 ],
+  [ 0, 0, 4, 4, 0, 3, 0, 0 ],
+  [ 0, 1, 0, 0, 0, 4, 4, 0 ],
+  ],
+
+  [ // frame 2
+  [ 0, 0, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 4, 4, 2, 2, 4, 4, 0 ],
+  [ 4, 4, 2, 2, 2, 2, 4, 0 ],
+  [ 4, 2, 2, 2, 3, 2, 4, 0 ],
+  [ 4, 4, 2, 2, 2, 2, 4, 0 ],
+  [ 0, 4, 4, 2, 4, 4, 4, 0 ],
+  [ 0, 0, 4, 4, 4, 0, 0, 0 ],
+  [ 0, 4, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 4, 4, 4, 4, 4, 3, 2 ],
+  [ 0, 3, 3, 3, 2, 4, 0, 0 ],
+  [ 0, 0, 4, 4, 4, 4, 0, 0 ],
+  [ 0, 0, 3, 3, 3, 3, 0, 0 ],
+  [ 0, 0, 3, 0, 0, 3, 0, 0 ],
+  [ 0, 0, 3, 0, 0, 4, 4, 0 ],
+  [ 0, 0, 4, 4, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_jogadorAbaixa = [
+  [
+    [ 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 4, 4, 2, 2, 4, 4, 0, 0, 0, 0, 0 ],
+    [ 4, 4, 2, 2, 2, 2, 4, 0, 0, 0, 0, 0 ],
+    [ 4, 2, 2, 2, 3, 2, 4, 0, 0, 0, 0, 0 ],
+    [ 4, 4, 2, 2, 2, 2, 4, 0, 2, 0, 0, 4 ],
+    [ 0, 4, 4, 2, 4, 4, 4, 3, 0, 0, 3, 4 ],
+    [ 0, 0, 4, 4, 4, 0, 0, 0, 3, 3, 0, 0 ],
+    [ 0, 3, 4, 4, 4, 4, 4, 4, 3, 0, 0, 4 ],
+    [ 0, 3, 3, 2, 4, 4, 4, 3, 3, 3, 3, 4 ],
+  ],
+];
+
+spr_jogadorPulo = spr_jogador;
+
+spr_jogadorDireita = spr_jogador;
+
+
+////////////////////////////////////////////
+// plataformas
+
+spr_rio =
+[
+  [ // frame 1
+    [2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3],
+  ],
+
+  [ // frame 2
+    [3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2, 3, 2],
+  ],
+];
+
+spr_pltH1 =
+[
+  [ // frame 1
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+  ],
+];
+
+spr_pltV1 =
+[
+  [ // frame 1
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+    [2, 2, 2],
+  ],
+
+  // [ // frame 2
+  //   [3, 2, 3, 2],
+  // ],
+];
+
+spr_pltV2 =
+[
+  [ // frame 1
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+    [2, 2, 2, 2, 2, 2, 2, 2],
+  ],
+
+  // [ // frame 2
+  //   [3, 2, 3, 2],
+  // ],
+];
+
+////////////////////////////////////////////
+// morte
+spr_morte =
+[
+  [ // frame 1
+  [ 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 33, 0 ],
+[ 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3 ],
+[ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3 ],
+[ 0, 0, 0, 4, 4, 4, 4, 3, 3, 4, 4, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 3 ],
+[ 0, 0, 0, 4, 4, 4, 3, 2, 2, 3, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 3, 2, 1, 1, 1, 3, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 2, 4, 1, 1, 4, 1, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 1, 4, 1, 1, 4, 1, 4, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 0, 0, 4, 2, 2, 2, 4, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 2, 1, 4, 4, 1, 3, 4, 0, 4, 4, 2, 1, 1, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 3, 1, 1, 1, 1, 3, 4, 4, 4, 4, 2, 1, 1, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 3, 3, 4, 4, 0, 4, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 3, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 2, 2, 2, 4, 3, 4, 4, 4, 4, 4, 3, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 2, 1, 1, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+
+  ],
+
+  [ // frame 2
+  [ 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 4, 0, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 33, 0 ],
+[ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3 ],
+[ 0, 0, 0, 4, 4, 4, 4, 3, 3, 4, 4, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3 ],
+[ 0, 0, 0, 4, 4, 4, 3, 2, 2, 3, 4, 4, 0, 0, 0, 0, 3, 3, 0, 0, 0, 3 ],
+[ 0, 0, 4, 4, 4, 3, 2, 1, 1, 1, 3, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 2, 4, 1, 1, 4, 1, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 1, 4, 1, 1, 4, 1, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 1, 1, 1, 1, 1, 1, 4, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 2, 1, 4, 4, 1, 3, 4, 0, 4, 4, 2, 2, 2, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 3, 1, 1, 1, 1, 3, 4, 4, 4, 4, 2, 1, 1, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 1, 1, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 3, 3, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 3, 0, 0, 4, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 2, 2, 2, 4, 3, 4, 4, 4, 4, 4, 3, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 4, 2, 1, 1, 3, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 4, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_morteR = [
+  [
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 0, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 0, 0, 0 ],
+    [ 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0 ],
+    [ 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+    [ 3, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 4, 4, 3, 3, 4, 4, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 3, 2, 2, 3, 4, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 3, 1, 1, 1, 2, 3, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 1, 4, 1, 1, 4, 2, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 4, 1, 4, 1, 1, 4, 1, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 4, 2, 2, 2, 4, 0, 0, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 4, 1, 1, 2, 4, 4, 0, 4, 3, 1, 4, 4, 1, 2, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 4, 1, 1, 2, 4, 4, 4, 4, 3, 1, 1, 1, 1, 3, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 4, 0, 4, 4, 3, 3, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 3, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 4, 4, 4, 4, 4, 3, 4, 2, 2, 2, 4 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 3, 1, 1, 2, 4 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4 ],
+    [ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 0, 4, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ],
+
+  [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 0, 4, 0, 0, 0 ],
+[ 0, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0 ],
+[ 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0 ],
+[ 3, 3, 3, 3, 3, 3, 0, 0, 0, 0, 0, 4, 4, 3, 3, 4, 4, 4, 4, 0, 0, 0 ],
+[ 3, 0, 0, 0, 3, 3, 0, 0, 0, 0, 4, 4, 3, 2, 2, 3, 4, 4, 4, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 3, 1, 1, 1, 2, 3, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 1, 4, 1, 1, 4, 2, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 1, 4, 1, 1, 4, 1, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 4, 4, 4, 0, 0, 0, 4, 1, 1, 1, 1, 1, 1, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 4, 2, 2, 2, 4, 4, 0, 4, 3, 1, 4, 4, 1, 2, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 4, 1, 1, 2, 4, 4, 4, 4, 3, 1, 1, 1, 1, 3, 4, 4, 0, 0, 0 ],
+[ 0, 0, 0, 4, 1, 1, 2, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 3, 3, 4, 4, 4, 4, 4, 3, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 4, 0, 0, 3, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 4, 4 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 3, 4, 4, 4, 4, 4, 3, 4, 2, 2, 2, 4 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 3, 1, 1, 2, 4 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 4, 3, 4, 4, 4, 4, 4, 3, 4, 4, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 4, 0, 4, 4, 4, 0, 4, 4, 4, 0, 4, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 0, 4, 0, 0, 4, 0 ],
+[ 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ],
+];
+
+////////////////////////////////////////////
+// itens
+spr_burger =
+[
+  [
+    [ 0, 0, 3, 3, 3, 3, 3, 0, 0 ],
+    [ 0, 3, 3, 1, 3, 3, 1, 3, 0 ],
+    [ 0, 3, 3, 3, 3, 1, 3, 3, 0 ],
+    [ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+    [ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+    [ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 3, 3, 0 ], 
+  ],
+];
+
+spr_maca =
+[
+  [
+    [ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 4, 3, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+    [ 0, 0, 3, 3, 2, 3, 3, 0, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 1, 3, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 2, 3, 0 ],
+    [ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+    [ 0, 0, 3, 3, 3, 3, 3, 0, 0 ],
+  ],
+];
+
+spr_pizza =
+[
+  [
+    [ 0, 0, 0, 0, 2, 0, 0, 0, 0 ],
+[ 0, 0, 0, 2, 2, 2, 0, 0, 0 ],
+[ 0, 0, 0, 2, 2, 2, 0, 0, 0 ],
+[ 0, 0, 2, 2, 2, 2, 4, 0, 0 ],
+[ 0, 0, 4, 4, 2, 2, 4, 0, 0 ],
+[ 0, 0, 4, 4, 2, 2, 2, 0, 0 ],
+[ 0, 0, 2, 2, 2, 2, 2, 0, 0 ],
+[ 0, 0, 2, 2, 2, 2, 2, 0, 0 ],
+[ 0, 4, 4, 2, 2, 2, 2, 2, 0 ],
+[ 0, 4, 4, 2, 2, 4, 4, 2, 0 ],
+[ 0, 2, 2, 2, 2, 4, 4, 2, 0 ],
+[ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+  ],
+];
+
+spr_salada =
+[
+  [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 2, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 2, 0, 0, 0, 0, 2 ],
+[ 2, 0, 2, 2, 4, 0, 2, 2, 0 ],
+[ 0, 2, 2, 4, 0, 2, 4, 4, 4 ],
+[ 2, 2, 1, 1, 1, 4, 4, 4, 4 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+[ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+[ 0, 0, 3, 3, 3, 3, 3, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_sorvete =
+[
+  [
+    [ 0, 0, 0, 4, 4, 4, 0, 0, 0 ],
+    [ 0, 0, 3, 4, 4, 4, 3, 0, 0 ],
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 2, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 2, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 2, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_castanha =
+[
+  [
+    [ 0, 0, 0, 3, 3, 3, 0, 0, 0 ],
+[ 0, 0, 0, 0, 3, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 3, 0, 0, 0, 0 ],
+[ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+[ 4, 4, 4, 4, 4, 4, 4, 2, 4 ],
+[ 4, 4, 4, 2, 4, 4, 4, 4, 4 ],
+[ 0, 4, 2, 4, 4, 4, 4, 4, 0 ],
+[ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+[ 0, 4, 4, 4, 4, 2, 4, 4, 0 ],
+[ 0, 0, 4, 4, 2, 4, 4, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 0, 4, 4, 4, 0, 0, 0 ],
+  ],
+];
+
+spr_sushi =
+[
+  [
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 4, 1, 1, 1, 1, 1, 4, 0 ],
+[ 4, 1, 1, 3, 3, 3, 1, 1, 4 ],
+[ 4, 1, 3, 3, 2, 3, 3, 1, 4 ],
+[ 4, 1, 1, 3, 3, 3, 1, 1, 4 ],
+[ 4, 4, 1, 1, 1, 1, 1, 4, 4 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+  ],
+];
+
+spr_chocolate =
+[
+  [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 4, 4, 4, 3, 4, 4, 4, 0 ],
+    [ 0, 4, 3, 3, 4, 3, 3, 4, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 4, 4, 4, 3, 4, 4, 4, 0 ],
+    [ 0, 4, 3, 3, 4, 3, 3, 4, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 4, 4, 4, 3, 4, 4, 4, 0 ],
+    [ 0, 4, 3, 3, 4, 3, 3, 4, 0 ],
+    [ 0, 4, 4, 4, 4, 4, 4, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_refrigerante =
+[
+  [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 3, 3, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 3, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 3, 0, 0, 0 ],
+    [ 0, 0, 2, 2, 2, 2, 2, 0, 0 ],
+    [ 0, 0, 4, 1, 1, 3, 4, 0, 0 ],
+    [ 0, 0, 4, 1, 1, 3, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 3, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+    [ 0, 0, 3, 3, 3, 3, 3, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ], 
+  ],
+];
+
+spr_dormir8h =
+[
+  [
+   
+    [ 0, 0, 4, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 4, 0, 4, 0, 4, 0, 0, 0 ],
+    [ 0, 0, 4, 0, 0, 4, 0, 0, 0 ],
+    [ 0, 4, 0, 4, 0, 4, 4, 4, 0 ],
+    [ 0, 0, 4, 0, 0, 4, 0, 4, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 4, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 4, 2, 2, 0, 0, 0, 0, 0, 0 ],
+    [ 4, 3, 3, 3, 3, 3, 3, 3, 3 ],
+    [ 4, 3, 3, 3, 3, 3, 3, 3, 4 ],
+    [ 4, 0, 0, 0, 0, 0, 0, 0, 4 ],
+
+  ],
+];
+
+spr_cafe = 
+[
+  [
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 2, 0, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 2, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 2, 0 ],
+    [ 0, 0, 0, 0, 0, 2, 0, 0, 0 ],
+    [ 0, 0, 0, 2, 1, 0, 0, 0, 0 ],
+    [ 0, 0, 0, 1, 1, 0, 0, 2, 0 ],
+    [ 0, 0, 0, 4, 4, 4, 4, 4, 4 ],
+    [ 3, 3, 3, 4, 4, 4, 4, 1, 4 ],
+    [ 3, 2, 3, 4, 4, 4, 4, 2, 4 ],
+    [ 3, 3, 3, 4, 4, 4, 4, 4, 4 ],
+    [ 0, 0, 0, 4, 4, 4, 4, 4, 4 ],
+    [ 0, 0, 0, 0, 3, 3, 3, 3, 0 ],
+    [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_livro =
+[
+  [
+    [ 4, 4, 4, 4, 4, 4, 2, 0, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 3, 3, 3, 3, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 2, 4, 0 ],
+[ 4, 2, 2, 2, 2, 2, 2, 4, 0 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 0 ],
+  ],
+];
+
+spr_exercicios =
+[
+  [
+    [ 0, 4, 0, 0, 0, 0, 0, 4, 0 ],			
+    [ 4, 4, 0, 0, 0, 0, 0, 4, 4 ],			
+    [ 4, 4, 3, 3, 3, 3, 3, 4, 4 ],			
+    [ 4, 4, 0, 0, 0, 0, 0, 4, 4 ],			
+    [ 0, 4, 0, 0, 0, 0, 0, 4, 0 ],
+  ],
+];
+
+spr_dancar = 
+[
+  [
+    [ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+[ 3, 3, 2, 2, 2, 2, 2, 3, 3 ],
+[ 3, 3, 2, 3, 3, 3, 3, 2, 3 ],
+[ 3, 3, 2, 3, 3, 3, 3, 2, 3 ],
+[ 3, 3, 2, 3, 3, 3, 3, 2, 3 ],
+[ 3, 2, 2, 3, 3, 3, 2, 2, 3 ],
+[ 3, 2, 2, 3, 3, 3, 2, 2, 3 ],
+[ 3, 3, 3, 3, 3, 3, 3, 3, 3 ],
+[ 0, 3, 3, 3, 3, 3, 3, 3, 0 ],
+  ],
+];
+
+
+////////////////////////////////////////////
+// cartas
+
+spr_cartaAtiva = [
+  [
+    [ 4, 3, 4, 3, 4, 3, 4, 3, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 2, 2, 2, 2, 2, 2, 2, 4 ],
+[ 3, 2, 2, 2, 2, 2, 2, 2, 3 ],
+[ 4, 3, 4, 3, 4, 3, 4, 3, 4 ],
+  ]
+];
+
+spr_love = [
+  [
+    [ 3, 4, 2, 4, 3 ],
+    [ 4, 4, 4, 4, 4 ],
+    [ 4, 4, 4, 4, 4 ],
+    [ 0, 4, 4, 4, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+  ]
+];
+
+spr_medical = [
+  [
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 4, 4, 4, 4, 4 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+  ]
+];
+
+spr_epiphany = [
+  [
+    [ 0, 3, 3, 3, 0 ],
+    [ 3, 0, 0, 0, 3 ],
+    [ 3, 0, 2, 0, 3 ],
+    [ 3, 0, 3, 0, 3 ],
+    [ 0, 4, 4, 4, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+  ]
+];
+
+spr_lost = [
+  [
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 4, 3, 4, 3, 4 ],
+    [ 0, 4, 4, 4, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+  ]
+];
+
+spr_achievement = [
+  [
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 3, 4, 3, 0 ],
+    [ 4, 4, 3, 4, 4 ],
+    [ 0, 4, 4, 4, 0 ],
+    [ 0, 4, 0, 4, 0 ],
+    [ 0, 0, 0, 0, 0 ],
+  ]
+];
+
+spr_blackout = [
+  [
+    [ 0, 0, 3, 0, 0 ],
+    [ 0, 3, 4, 3, 0 ],
+    [ 0, 3, 4, 3, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 1, 0, 0 ],
+    [ 0, 1, 1, 1, 0 ],
+    [ 0, 1, 1, 1, 0 ],
+    [ 0, 1, 1, 1, 0 ],
+    [ 0, 1, 1, 1, 0 ],
+    [ 0, 1, 1, 1, 0 ],
+  ]
+];
+
+spr_overwhelmed = 
+[
+  [
+    [ 0, 3, 3, 3, 0 ],
+    [ 3, 0, 0, 0, 3 ],
+    [ 3, 0, 0, 0, 3 ],
+    [ 3, 0, 0, 0, 3 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+  ],
+];
+
+spr_bravery = 
+[
+  [
+    [ 0, 0, 3, 0, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 0, 3, 3, 3, 0 ],
+    [ 4, 4, 4, 4, 4 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 4, 0, 0 ],
+    [ 0, 0, 0, 0, 0 ],
+  ],
+];
+
+spr_carta =
+[
+  [
+    
+    [ 4, 2, 4, 2, 4, 2, 4, 2, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 2, 4, 2, 4, 2, 4, 2, 4 ],
+  
+  ],
+];
+
+spr_cartaEstaciona =
+[
+  [
+    
+    [ 4, 2, 4, 2, 4, 2, 4, 2, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 4, 4, 4, 4, 4, 4, 4, 4 ],
+[ 2, 4, 4, 4, 4, 4, 4, 4, 2 ],
+[ 4, 2, 4, 2, 4, 2, 4, 2, 4 ],
+  
+  ],
+
+  [
+    
+    [ 0, 0, 4, 2, 4, 2, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 4, 4, 4, 4, 0, 0 ],
+[ 0, 0, 2, 4, 4, 4, 2, 0, 0 ],
+[ 0, 0, 4, 2, 4, 2, 4, 0, 0 ],
+      
+      ],
+
+  [
+    
+    [ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+[ 0, 0, 0, 0, 4, 0, 0, 0, 0 ],
+  
+  ],
+];
+
+
+// ////////////////////////////////////////////
+// // fundos
+// spr_fundo0 = 
+// [
+//   [ // frame 1
+//     [4],
+//   ],
+// ];
+
+// spr_fundo01 = 
+// [
+//   [ // frame 1
+//     [1],
+//   ]
+// ];
+
+// spr_fundo02 = 
+// [
+//   [ // frame 1
+//     [2],
+//   ]
+// ];
+
+// spr_fundo03 = 
+// [
+//   [ // frame 1
+//     [3],
+//   ]
+// ];
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Classes
+
+//////////////////////////////////////////////////////////////////////////////
+// internas da engine
+
+class Palco{
+  constructor(cena, musica){
+  this.cena = cena;
+  this.musica = musica;
+  }
+  
+    chamaCena(){
+      if(this.cena == 0){telaInicial()};
+      if(this.cena == 1){tutorial()};
+      if(this.cena == 2){cena()};
+    }
+  
+    tocaMusica(){
+      if(this.musica == "temaMudo"){ tocaMusica(temaMudo); }
+      if(this.musica == "temaTutorial"){ tocaMusica(temaTutorial); }
+      if(this.musica == "temaPrincipal"){ tocaMusica(temaPrincipal); }
+      if(this.musica == "temaGameOver"){ tocaMusica(temaGameOver); }
+    }
+  
+} // fim class palco
+
+class Relogio{
+  constructor(){
+  
+  this.t_flag = false;
+  this.t_inicial = 0;
+  this.t_final = 0;
+
+  this.segundos = 0;
+  this.decsegundos = 0;
+
+  }
+
+  clockInterno(){
+  if(this.t_flag == false){this.t_inicial = Date.now(); this.t_final = Date.now(); this.t_flag = true}
+  if(this.t_final-this.t_inicial < 100){this.t_final = Date.now();}
+    else {
+    ++this.decsegundos; // contador de décimos de segundos por causa do 100
+  
+    this.t_flag = false;
+    }
+    this.segundos = ajustaResolucao(this.decsegundos/10, 1); // contador de segundos com resolução 0.1 s
+    //this.segundos = parseFloat(Number(this.decsegundos/10).toFixed(2)); 
+  }
+
+
+} // fim da class relogio
+
+class UIs{
+  constructor(){
+  
+  this.margemEsqTxt = 70;
+  this.margemEsqBarras = 86;
+  this.alturaBarrasOut = 18; 
+  this.alturaBarrasIn = 14; 
+  this.larguraBarrasOut = 160; 
+  this.larguraBarrasIn = this.larguraBarrasOut-4;  
+  }
+
+  gameover(){
+    qdSolido(250, gameoverY, 300, 300, 4);
+    qdSolido(260, gameoverY+10, 280, 280, 3);
+    var mensagem = '';
+    var tamanho = '';
+    var goFonte = '';
+    if(coletados < 21){mensagem = 'G a m e   o v e r'; tamanho = '36'; goFonte = 'Impact';}
+    if(coletados >= 21){mensagem = 'Almost there!'; tamanho = '32'; goFonte = 'Impact';}
+    if(coletados >= 30){mensagem = 'So close!'; tamanho = '32'; goFonte = 'Impact';}
+    if(coletados >= 32){mensagem = 'You died, but lived a good life!'; tamanho = '16'; goFonte = 'Verdana';}
+    txt1.puro(mensagem, canvas.width/2, gameoverY+70, tamanho+'px '+goFonte , 'center', 1);
+    if(gameoverY < 150){gameoverY++;}
+    if(gameoverY == 150){
+      
+      var viveu = '- You survived for '+idade+' year';
+      if(idade != 1){viveu +='s';}
+      txt1.puro(viveu, canvas.width/2, 280, '18px Arial', 'center', 1);
+
+      var col = '- And collected '+coletados;
+      if(coletados != 1){col += ' items & cards';} else {col += ' item & card';}
+      txt1.puro(col, canvas.width/2, 310, '18px Arial', 'center', 1);
+
+      txt1.puro('Thanks for playing!', canvas.width/2, 370, '18px Verdana', 'center', 1);
+
+      txt1.puro('press ENTER to play again', canvas.width/2, 410, '21px Impact', 'center', 1);
+      
+      podeEnter = true;
+    }
+  }
+
+  atualiza(){
+    // vida jogador
+    jogador.vida = (jogador.corpo + jogador.mente + jogador.alma)/3;
+    
+    // contador de idade
+    if(tempoPassa){
+      if(relog0.segundos >= idadeT + 7){
+        idade++;
+        var e = random(1, 3);
+        if(e == 1 && jogador.corpo > 0){jogador.corpo -= 15; if(jogador.corpo < 0){jogador.corpo = 0;}}
+        if(e == 2 && jogador.mente > 0){jogador.mente -= 15; if(jogador.mente < 0){jogador.mente = 0;}}
+        if(e == 3 && jogador.alma > 0){jogador.alma -= 15; if(jogador.alma < 0){jogador.alma = 0;}}
+        idadeT = relog0.segundos;
+      }
+    }
+  } // fim do método atualiza
+
+  desenha(){
+    // fundo da barra de baixo
+    qdSolido(0, 580, 800, canvas.height - chao, 3);
+    
+    //estatus do jogador
+
+    // itens e cartas coletados
+    
+
+    // vida
+    txt1.puro('life',
+    310, 702, "24px Arial", "center", 1);
+    qdSolido(298, 676, 22, -70, 1);
+    qdSolido(300, 674, 18, (-65)*jogador.vida/100, 4);
+
+    ctx.beginPath();
+    ctx.moveTo(260, 610);
+    ctx.lineTo(280, 660); 
+    ctx.lineTo(260, 700); 
+    // ctx.lineTo(100, 610);
+    ctx.fillStyle = paleta[2];
+    ctx.fill();
+    ctx.closePath();
+
+    txt1.puro('body',
+    this.margemEsqTxt, canvas.height - 97,
+    "24px Arial", "right", 1
+    );
+    qdSolido(this.margemEsqBarras, canvas.height - 112, this.larguraBarrasOut, this.alturaBarrasOut, 1);
+    // txt1.puro('affects movement', this.margemEsqTxt+94, canvas.height - 61-37, "12px Arial", "center", 3);
+    qdSolido(this.margemEsqBarras+2, canvas.height - 110, this.larguraBarrasIn*jogador.corpo/100, this.alturaBarrasIn, 4);
+
+    txt1.puro('mind',
+    this.margemEsqTxt, canvas.height - 57,
+    "24px Arial", "right", 1
+    );
+    qdSolido(this.margemEsqBarras, canvas.height - 112 +38, this.larguraBarrasOut, this.alturaBarrasOut, 1);
+    // txt1.puro('affects world speed', this.margemEsqTxt+94, canvas.height - 60, "12px Arial", "center", 3);
+    qdSolido(this.margemEsqBarras+2, canvas.height - 110+38, this.larguraBarrasIn*jogador.mente/100, this.alturaBarrasIn, 4);
+
+    txt1.puro('soul',
+    this.margemEsqTxt, canvas.height - 17,
+    "24px Arial", "right", 1
+    );
+    qdSolido(this.margemEsqBarras, canvas.height - 112+78, this.larguraBarrasOut, this.alturaBarrasOut, 1);
+    // txt1.puro("affects Death' size", this.margemEsqTxt+94, canvas.height - 61+41, "12px Arial", "center", 3);
+    qdSolido(this.margemEsqBarras+2, canvas.height - 110+78, this.larguraBarrasIn*jogador.alma/100, this.alturaBarrasIn, 4);
+
+    // contador de idade
+    qdSolido(630, 610, 150, 100, 4);
+    ctx.beginPath();
+    ctx.font = '64px Impact';
+    ctx.textAlign = 'center';
+    if(relog0.segundos >= idadeT + 0.5 || idade == 0){  
+      ctx.fillStyle = paleta[1];
+    } else {
+      ctx.fillStyle = paleta[3];}
+    ctx.fillText(idade, 703, 675);
+    ctx.closePath();
+
+    if(idade == 1){txt1.puro('year survived ', 708, 702, "21px Arial", "center", 1);}
+    else{txt1.puro('years survived ', 708, 702, "21px Arial", "center", 1);}
+
+
+    // carta ativada
+    qdSolido(340, 600, 270, 110, 2);
+    txt1.puro('destiny card', 348, canvas.height - 98, "18px Arial", "left", 3)
+
+    //coletados
+    txt1.puro('itens & cards: '+coletados, 704, 604, "16px Arial", "center", 1);
+  }
+
+} // fim class UI
+
+class Sprite{
+  constructor(x, y, lado, sprite, tFrame){
+    
+    this.centroX = x;
+    this.centroY = y;
+    
+    this.lado = lado;
+    this.sprite = sprite;
+
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+
+    this.tUltimoFrame = 0;
+    this.tFrame = tFrame;
+    this.frame = 0;
+
+    this.ladoEsquerdo = this.x;
+    this.ladoDireito = this.x + this.largura;
+    this.ladoCima = this.y;
+    this.ladoBaixo = this.y + this.altura;
+
+    // this.centroX = this.x + this.largura/2;
+    // this.centroY = this.y + this.altura/2;
+
+    }
+
+  desenha(){
+
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+
+    this.ladoEsquerdo = this.x;
+    this.ladoDireito = this.x + this.largura;
+    this.ladoCima = this.y;
+    this.ladoBaixo = this.y + this.altura;
+
+    this.centroX = this.x + this.largura/2;
+    this.centroY = this.y + this.altura/2;
+
+    for(var linha = 0; linha < this.sprite[this.frame].length; linha++){
+        
+        for (var coluna = 0; coluna < this.sprite[this.frame][linha].length; coluna++){
+
+            if (this.sprite[this.frame][linha][coluna] != 0){
+                ctx.beginPath();
+                ctx.rect(this.x + (coluna * this.lado), this.y + (linha * this.lado), this.lado, this.lado);
+                ctx.fillStyle = paleta[this.sprite[this.frame][linha][coluna]];
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            if (this.tUltimoFrame + this.tFrame <= relog0.segundos){
+                this.frame++;
+                if(this.frame == this.sprite.length){this.frame = 0;}
+                this.tUltimoFrame = relog0.segundos;
+            }
+        }
+        
+    }
+    
+    // qdBordas(this.ladoEsquerdo, this.ladoCima, this.ladoDireito, this.ladoBaixo, true, true, true, true, 1, 5)
+
+  } // fim do método desenha
+
+} // fim da class Sprite
+
+class Instrumento{
+  constructor(loop, delay, partitura){
+    
+    this.loop = loop;
+    //this.quantosLoops = quantos;
+
+    this.partitura = partitura; // é uma matriz
+    this.tempo0 = relog0.segundos; // marca o instante zero
+    this.tempoC = relog0.segundos; // marca o tempo corrente
+    this.tempoMusica = this.tempoC - this.tempo0; // marca a duração da música sendo tocada
+    
+    this.qualNota = partitura[0];
+    this.duracao = partitura[1];
+    this.volume = partitura[2];
+    this.tipo = partitura[3]; // sine, square, triangle, sawtooth
+    this.tempoProxNota = delay; // começa com zero pra que seja tocada a primeira nota
+    
+    this.audioCtx = new AudioContext();
+    this.ganho = this.audioCtx.createGain();
+    this.nota = this.audioCtx.createOscillator();
+
+  }
+
+  toca(){
+
+    if(this.tempoMusica >= this.tempoProxNota){ // se a duração da música já passou o tempo da nota sendo tocada
+
+      // console.log(this.tempoMusica);
+      // console.log(this.qualNota);
+
+      this.audioCtx.close();  // mata a execução anterior, pra liberar memória
+
+      this.audioCtx = new AudioContext();
+      this.ganho = this.audioCtx.createGain();
+      this.nota = this.audioCtx.createOscillator();
+      this.ganho.connect(this.audioCtx.destination);
+
+      this.nota.type = this.tipo; // sine, square, triangle, sawtooth
+      this.nota.frequency.value = notas[this.qualNota];
+      
+      this.nota.connect(this.ganho);
+      
+      if(abaixaSom == true){ // se tiver em um menu o volume abaixa
+        this.ganho.gain.setValueAtTime(this.volume/7, this.audioCtx.currentTime);  
+      } else {
+      this.ganho.gain.setValueAtTime(this.volume, this.audioCtx.currentTime);
+      }
+
+      this.ganho.gain.exponentialRampToValueAtTime(0.0001, this.audioCtx.currentTime + this.duracao);
+      this.nota.start(0);
+      
+      this.nota.stop(this.audioCtx.currentTime + this.duracao + 10); // vai matar a onda muda quando passar o tempo da duracao da nota
+
+      // agora pegamos o tempo em que a nota sendo tocada vai parar de tocar
+      this.tempoProxNota = Number.parseFloat(this.tempoMusica + this.duracao).toFixed(1);
+
+      // agora verificamos se essa partitura tem loop
+      if(this.loop == true){ // se tem movemos as notas tocadas pro final da partitura
+        this.partitura.splice(this.partitura.length, 0, this.partitura[0], this.partitura[1], this.partitura[2], this.partitura[3]);
+      }
+      
+      this.partitura.splice(0, 4); // removemos os originais
+      
+      // agora verificamos se sobrou alguém ainda na matriz e essa matriz não é com loop
+      if(this.loop == false && this.partitura.length == 0){
+          this.audioCtx.close(); // mata a execução, pra liberar memória
+          this.tempoProxNota = -1; // garante que nunca mais exista o tempo da próxima nota
+        } else { // se ela tem loop e se ainda tem notas pra tocar, ela segue em frente
+        //agora atualizamos as variáveis para o próximo ciclo olhar já para a próxima nota
+        this.qualNota = this.partitura[0];
+        this.duracao = this.partitura[1];
+        this.volume = this.partitura[2];
+        this.tipo = this.partitura[3];
+        }
+    }
+
+    this.tempoC = relog0.segundos; // o tempoC é atualizado todas as rodadas
+    this.tempoMusica = this.tempoC - this.tempo0; // o tempo de duração da música é atualizado a cada rodada
+
+  } // fim método toca
+  
+} // fim class Batida
+
+class Notas{
+  constructor(qualNota, duracao, volume, tipo){
+    this.qualNota = qualNota;
+    this.duracao = duracao;
+    this.tipo = tipo;
+    this.volume = volume;
+
+    this.contador = 0;
+    this.audioCtx = new AudioContext();
+    this.ganho = this.audioCtx.createGain();
+    this.nota = this.audioCtx.createOscillator();
+  }
+
+  toca(){ 
+    this.audioCtx.close() // mata a execução anterior
+    
+    this.audioCtx = new AudioContext();
+    this.ganho = this.audioCtx.createGain();
+    this.nota = this.audioCtx.createOscillator();
+    
+    this.ganho.connect(this.audioCtx.destination);
+
+    this.nota.type = this.tipo; // sine, square, triangle, sawtooth
+    this.nota.frequency.value = notas[this.qualNota];
+    this.ganho.gain.setValueAtTime(this.volume, this.audioCtx.currentTime);
+    this.nota.connect(this.ganho);
+    this.nota.start();
+    this.ganho.gain.exponentialRampToValueAtTime(0.00001, this.audioCtx.currentTime + this.duracao);
+    this.nota.stop(this.audioCtx.currentTime + this.duracao + 1);  // mata a onda muda
+  }
+
+} // fim da class notas
+
+class Texto{
+  constructor(){
+    
+    this.x = 0;
+    this.y = 0;
+
+    this.frame = 0;
+    this.setup = false;
+    this.tProxTroca = 0;
+
+  }
+
+  pisca(texto1, texto2, fonte, alinhamento, cor1, cor2, x, y, t1, t2){
+  
+    // setup
+      if(this.setup == false){
+        this.tProxTroca = relog0.segundos + t1; // só precisa ser feito a primeira vez
+        this.setup = true;
+      }
+
+    // exibição
+    ctx.beginPath();
+    ctx.font = fonte;
+    ctx.textAlign = alinhamento;
+
+      if(this.frame == 0){
+        ctx.fillStyle = paleta[cor1];
+        ctx.fillText(texto1, x, y);
+        if(relog0.segundos >= this.tProxTroca){
+          this.tProxTroca = ajustaResolucao(relog0.segundos + t2, 1);
+          this.frame = 1;
+        };
+      }
+      
+      if(this.frame == 1){
+        ctx.fillStyle = paleta[cor2];
+        ctx.fillText(texto2, x, y);
+        if(relog0.segundos >= this.tProxTroca){
+          this.tProxTroca = ajustaResolucao(relog0.segundos + t1, 1);
+          this.frame = 0;
+        };
+      }
+    
+      ctx.closePath();
+
+  } // fim do método pisca
+
+  surge(texto1, fonte, alinhamento, cor1, cor2, cor3, cor4, x, y, t1){
+  
+    ctx.beginPath();
+    ctx.font = fonte;
+    ctx.textAlign = alinhamento;
+
+
+  // setup
+    if(this.setup == false){
+      this.tProxTroca = relog0.segundos + t1; // só precisa ser feito a primeira vez
+      this.frame = 0;
+      this.setup = true;
+    }
+
+  // exibição
+    if(this.frame == 0){
+      ctx.fillStyle = paleta[cor1];
+      ctx.fillText(texto1, x, y);
+      if(relog0.segundos >= this.tProxTroca){
+        this.tProxTroca = ajustaResolucao(relog0.segundos + t1, 1);
+        this.frame = 1;
+      };
+    }
+    
+    if(this.frame == 1){
+      ctx.fillStyle = paleta[cor2];
+      ctx.fillText(texto1, x, y);
+      if(relog0.segundos >= this.tProxTroca){
+        this.tProxTroca = ajustaResolucao(relog0.segundos + t1, 1);
+        this.frame = 2;
+      };
+    }
+
+    if(this.frame == 2){
+      ctx.fillStyle = paleta[cor3];
+      ctx.fillText(texto1, x, y);
+      if(relog0.segundos >= this.tProxTroca){
+        this.tProxTroca = ajustaResolucao(relog0.segundos + t1, 1);
+        this.frame = 3;
+      };
+    }
+
+    if(this.frame == 3){
+      ctx.fillStyle = paleta[cor4];
+      ctx.fillText(texto1, x, y);
+    }
+
+    ctx.closePath();
+
+} // fim do método surge
+
+  puro(texto, x, y, fonte, alinhamento, cor){
+    ctx.beginPath();
+    ctx.font = fonte;
+    ctx.textAlign = alinhamento;
+    ctx.fillStyle = paleta[cor];
+    ctx.fillText(texto, x, y);
+    ctx.closePath();
+  }
+
+} // fim class Texto
+
+
+//////////////////////////////////////////////////////////////////////////////
+// específicas do jogo
+
+////////////////////////////////////////////////////////////////////////////////
+class Jogadores extends Sprite{
+  constructor(x, y, lado, sprite, tFrame){
+    super(x, y, lado, sprite, tFrame);
+    // this.x = x;
+    // this.y = y;
+    // this.lado = lado;
+    // this.sprite = sprite;
+    // this.tFrame = tFrame;
+    this.tUltimoFrame = 0;
+    this.frame = 0;
+    
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.centroX = this.largura/2;
+    this.centroY = this.altura/2;
+    this.ladoEsquerdo = this.x;
+    this.ladoDireito = this.x + this.largura;
+    this.ladoCima = this.y;
+    this.ladoBaixo = this.y + this.altura;
+
+    this.colidiuDireita = false;
+    this.colidiuEsquerda = false;
+    this.colidiuCima = false;
+    this.colidiuBaixo = false;
+    
+    this.colidiuMorte = false;
+    this.colidiuMorteT = 0;
+
+    this.podeDireita = false;
+    this.podeEsquerda = false;
+    this.podeCima = false;
+    this.podeBaixo = false;
+
+    this.limiteDireita = 0;
+    this.limiteEsquerda = 0;
+    this.limiteCima = 0;
+    this.limiteBaixo = 0;
+
+    this.passoDireita = 6;
+    this.passoEsquerda = 9;
+    
+    this.impulso = false;
+    this.alturaPulo = 210;
+    this.forcaImpulso = 18;
+    this.noAr = false;
+    this.ultimoChao = this.y;
+    
+    this.forcaGravidade = 10;
+    this.gravidade0 = this.forcaGravidade;
+
+    this.puloCool = true;
+    this.puloCoolT = 0;
+
+    this.corpo = 100;
+    this.mente = 100;
+    this.alma = 100;
+    this.vida = 100;
+    this.vidaY = 10;
+    
+    this.corpoAnterior = this.corpo;
+    this.menteAnterior = this.mente;
+    this.almaAnterior = this.alma;
+    
+    this.corpoDelta = this.corpo - this.corpoAnterior;
+    this.menteDelta = this.mente - this.menteAnterior;
+    this.almaDelta =  this.alma - this.almaAnterior;
+
+    this.corpoUpdate = false;
+    this.menteUpdate = false;
+    this.almaUpdate = false;
+    
+    this.corpoUpdateT = 0;
+    this.menteUpdateT = 0;
+    this.almaUpdateT = 0;
+
+    this.exibeUpdateT = 1.5;
+    this.posUpdateCorpo = -20;
+    this.posUpdateMente = 0;
+    this.posUpdateAlma = 20;
+
+    this.somParedePode = true;
+    this.somMorte = false;
+    this.somMorteCool = true;
+    this.somMorteCoolT = 0;
+
+    this.somSlideCool = true;
+    this.somSlideCoolT = true;
+
+  }
+  
+  colisaoCarta(){
+    atualizaPos(this);
+
+    if(
+        // quadrado 1
+        ( // na direita
+          this.ladoDireito + this.passoDireita > carta.ladoEsquerdo &&
+          this.ladoDireito < carta.ladoDireito
+          &&
+          (
+          this.ladoCima > carta.ladoCima &&
+          this.ladoCima < carta.ladoBaixo
+          ||
+          this.ladoBaixo > carta.ladoCima &&
+          this.ladoBaixo < carta.ladoBaixo
+          )
+        )
+        ||
+        ( // na esquerda
+          this.ladoEsquerdo - this.passoEsquerda < carta.ladoDireito &&
+          this.ladoEsquerdo > carta.ladoEsquerdo
+          &&
+          (
+          this.ladoCima > carta.ladoCima &&
+          this.ladoCima < carta.ladoBaixo
+          ||
+          this.ladoBaixo > carta.ladoCima &&
+          this.ladoBaixo < carta.ladoBaixo
+          )
+        )
+        ||
+        ( // em cima
+          this.ladoCima - this.forcaImpulso < carta.ladoBaixo &&
+          this.ladoBaixo > carta.ladoBaixo
+          &&
+          (
+            this.ladoDireito > carta.ladoEsquerdo &&
+            this.ladoDireito < carta.ladoDireito
+            ||
+            this.ladoEsquerdo > carta.ladoEsquerdo &&
+            this.ladoEsquerdo < carta.ladoDireito
+            )
+        )
+        ||
+        ( // em baixo
+          this.ladoBaixo - this.forcaGravidade < carta.ladoCima &&
+          this.ladoBaixo > carta.ladoBaixo
+          &&
+          (
+            this.ladoDireito > carta.ladoEsquerdo &&
+            this.ladoDireito < carta.ladoDireito
+            ||
+            this.ladoEsquerdo > carta.ladoEsquerdo &&
+            this.ladoEsquerdo < carta.ladoDireito
+          )
+        )
+    ){
+      if(carta.pega == false){somCarta();};
+      carta.pega = true;
+      
+    }
+  } // fim do método colisão carta
+
+  colisaoMorte(){
+    atualizaPos(this);
+
+    if(
+        // quadrado 1
+        ( // na direita
+          this.ladoDireito + this.passoDireita > morte.ladoEsquerdo1 &&
+          this.ladoDireito < morte.ladoDireito1
+          &&
+          (
+          this.ladoCima > morte.ladoCima1 &&
+          this.ladoCima < morte.ladoBaixo1
+          ||
+          this.ladoBaixo > morte.ladoCima1 &&
+          this.ladoBaixo < morte.ladoBaixo1
+          )
+        )
+        ||
+        ( // na esquerda
+          this.ladoEsquerdo - this.passoEsquerda < morte.ladoDireito1 &&
+          this.ladoEsquerdo > morte.ladoEsquerdo1
+          &&
+          (
+          this.ladoCima > morte.ladoCima1 &&
+          this.ladoCima < morte.ladoBaixo1
+          ||
+          this.ladoBaixo > morte.ladoCima1 &&
+          this.ladoBaixo < morte.ladoBaixo1
+          )
+        )
+        ||
+        ( // em cima
+          this.ladoCima - this.forcaImpulso < morte.ladoBaixo1 &&
+          this.ladoCima > morte.ladoCima1
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo1 &&
+            this.ladoDireito < morte.ladoDireito1
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo1 &&
+            this.ladoEsquerdo < morte.ladoDireito1
+            )
+        )
+        ||
+        ( // em baixo
+          this.ladoBaixo - this.forcaGravidade < morte.ladoCima1 &&
+          this.ladoBaixo > morte.ladoBaixo1
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo1 &&
+            this.ladoDireito < morte.ladoDireito1
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo1 &&
+            this.ladoEsquerdo < morte.ladoDireito1
+          )
+        )
+
+        ||( // quadrado 2
+        
+        ( // na direita
+          this.ladoDireito + this.passoDireita > morte.ladoEsquerdo2 &&
+          this.ladoDireito < morte.ladoDireito2
+          &&
+          (
+          this.ladoCima > morte.ladoCima2 &&
+          this.ladoCima < morte.ladoBaixo2
+          ||
+          this.ladoBaixo > morte.ladoCima2 &&
+          this.ladoBaixo < morte.ladoBaixo2
+          )
+        )
+        ||
+        ( // na esquerda
+          this.ladoEsquerdo - this.passoEsquerda < morte.ladoDireito2 &&
+          this.ladoEsquerdo > morte.ladoEsquerdo2
+          &&
+          (
+          this.ladoCima > morte.ladoCima2 &&
+          this.ladoCima < morte.ladoBaixo2
+          ||
+          this.ladoBaixo > morte.ladoCima2 &&
+          this.ladoBaixo < morte.ladoBaixo2
+          )
+        )
+        ||
+        ( // em cima
+          this.ladoCima - this.forcaImpulso < morte.ladoBaixo2 &&
+          this.ladoCima > morte.ladoCima2
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo2 &&
+            this.ladoDireito < morte.ladoDireito2
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo2 &&
+            this.ladoEsquerdo < morte.ladoDireito2
+            )
+        )
+        ||
+        ( // em baixo
+          this.ladoBaixo - this.forcaGravidade < morte.ladoCima2 &&
+          this.ladoBaixo > morte.ladoBaixo2
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo2 &&
+            this.ladoDireito < morte.ladoDireito2
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo2 &&
+            this.ladoEsquerdo < morte.ladoDireito2
+          )
+        )
+        )|| ( // quadrado 3
+
+        ( // na direita
+          this.ladoDireito + this.passoDireita > morte.ladoEsquerdo3 &&
+          this.ladoDireito < morte.ladoDireito3
+          &&
+          (
+          this.ladoCima > morte.ladoCima3 &&
+          this.ladoCima < morte.ladoBaixo3
+          ||
+          this.ladoBaixo > morte.ladoCima3 &&
+          this.ladoBaixo < morte.ladoBaixo3
+          )
+        )
+        ||
+        ( // na esquerda
+          this.ladoEsquerdo - this.passoEsquerda < morte.ladoDireito3 &&
+          this.ladoEsquerdo > morte.ladoEsquerdo3
+          &&
+          (
+          this.ladoCima > morte.ladoCima3 &&
+          this.ladoCima < morte.ladoBaixo3
+          ||
+          this.ladoBaixo > morte.ladoCima3 &&
+          this.ladoBaixo < morte.ladoBaixo3
+          )
+        )
+        ||
+        ( // em cima
+          this.ladoCima - this.forcaImpulso < morte.ladoBaixo3 &&
+          this.ladoCima > morte.ladoCima3
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo3 &&
+            this.ladoDireito < morte.ladoDireito3
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo3 &&
+            this.ladoEsquerdo < morte.ladoDireito3
+            )
+        )
+        ||
+        ( // em baixo
+          this.ladoBaixo - this.forcaGravidade < morte.ladoCima3 &&
+          this.ladoBaixo > morte.ladoBaixo3
+          &&
+          (
+            this.ladoDireito > morte.ladoEsquerdo3 &&
+            this.ladoDireito < morte.ladoDireito3
+            ||
+            this.ladoEsquerdo > morte.ladoEsquerdo3 &&
+            this.ladoEsquerdo < morte.ladoDireito3
+          )
+        )
+      )
+    ){
+      // somConfirma();
+      // console.log('morte!');
+      // forcaVento = 0;
+      // this.x = canvas.width/2;
+      this.colidiuMorte = true;
+      if(this.vida > 0){
+        if(this.corpo > 0){this.corpo -= 0.5;}
+        if(this.mente > 0){this.mente -= 0.5;}
+        if(this.alma > 0){this.alma -= 0.5;}
+        if(morte.centroX < this.centroX){this.x += random(5,10);}
+        if(morte.centroX > this.centroX){this.x += random(-10, -5);}
+      }
+      
+    } else {this.colidiuMorte = false;}
+  } // fim do método colisão morte
+
+  colisaoMoedas(){
+    atualizaPos(this);
+    
+    //moedas
+    for (var i = 0; i < moedas.length; i++){
+      if(
+        moedas[i].disponivel == true &&
+        this.ladoEsquerdo < moedas[i].ladoEsquerdo + moedas[i].largura &&
+        this.ladoDireito > moedas[i].ladoDireito - moedas[i].largura &&
+        this.ladoCima < moedas[i].ladoCima + moedas[i].altura &&
+        this.ladoBaixo > moedas[i].ladoBaixo - moedas[i].altura
+      ){
+        somMoeda();
+        coletados++;
+        moedas[i].pega = true;
+        this.corpo += moedas[i].corpo;
+        this.corpoDelta = moedas[i].corpo;
+        this.corpoUpdate = true;
+        if(this.corpo > 100){this.corpo = 100;} 
+        
+        this.mente += moedas[i].mente;
+        this.menteDelta = moedas[i].mente;
+        this.menteUpdate = true;
+        if(this.mente > 100){this.mente = 100;} 
+
+        this.alma += moedas[i].alma;
+        this.almaDelta = moedas[i].alma;
+        this.almaUpdate = true;
+        if(this.alma > 100){this.alma = 100;} 
+
+        moedas.splice(i, 1);
+      }
+    }
+  } // fim do método colisão moedas
+
+  updateStatus(){
+    
+    // morte - life
+    if(this.colidiuMorte){
+      this.colidiuMorteT = relog0.segundos;
+      this.vidaY = 12;
+      this.somMorte = true;
+    }
+    if(relog0.segundos <= this.colidiuMorteT + 0.5){
+      if(this.vida != 100 && this.vida > 0){
+      txt1.puro('life -1', this.ladoDireito+7, this.y - 10, this.vidaY+'px Arial', 'left', 4);
+      if(this.vidaY > 14){this.vidaY = 14} else {this.vidaY++};
+      }
+    }
+    if(this.somMorte == true && this.somMorteCool == true){
+      this.somMorte = false;
+      this.somMorteCool = false;
+      this.somMorteCoolT = relog0.segundos;
+      somToqueMorte();
+    }
+    if(this.colidiuMorte &&
+      relog0.segundos >= this.somMorteCoolT + 0.15 &&
+      this.vida > 0){this.somMorteCool = true;}
+
+
+    // corpo
+    if(this.corpoUpdate){
+      this.corpoUpdateT = relog0.segundos;
+      this.corpoAnterior = this.corpo;
+      this.corpoUpdate = false;
+    }
+    if(relog0.segundos <= this.corpoUpdateT + this.exibeUpdateT){
+      if(this.corpoDelta != 0){
+        if(this.corpoDelta >= 0){ var tag = 'body +';} else{var tag = 'body ';}
+        txt1.puro(tag+this.corpoDelta, this.ladoEsquerdo-7, this.y + this.posUpdateCorpo, '12px Arial', 'right', 4);
+      }
+    }
+
+    // mente
+      if(this.menteUpdate){
+        this.menteUpdateT = relog0.segundos;
+        this.menteAnterior = this.mente;
+        this.menteUpdate = false;
+      }
+      if(relog0.segundos <= this.menteUpdateT + this.exibeUpdateT){
+        // if(this.menteDelta != 0){
+        if(this.menteDelta != 0){
+          if(this.menteDelta >= 0){ var tag = 'mind +';} else{var tag = 'mind ';}
+          txt1.puro(tag+this.menteDelta, this.ladoEsquerdo-7, this.y + this.posUpdateMente, '12px Arial', 'right', 4);
+        }
+      }
+
+    // alma
+      if(this.almaUpdate){
+        this.almaUpdateT = relog0.segundos;
+        this.almaAnterior = this.alma;
+        this.almaUpdate = false;
+      }
+      if(relog0.segundos <= this.almaUpdateT + this.exibeUpdateT){
+        if(this.almaDelta != 0){
+          if(this.almaDelta >= 0){ var tag = 'soul +';} else{var tag = 'soul ';}
+          txt1.puro(tag+this.almaDelta, this.ladoEsquerdo-7, this.y + this.posUpdateAlma, '12px Arial', 'right', 4);
+        }
+      }  
+
+  } // fim do método update
+
+  controle(){
+    
+    //pulo
+    if(
+      upPressed &&
+      this.podeCima &&
+      this.puloCool &&
+      this.noAr == false
+    ){
+      somPulo();
+      this.somParedePode = true;
+      this.puloCoolT = relog0.segundos + 0.4;
+      this.puloCool = false;
+
+      this.noAr = true;
+      this.ultimoChao = this.y;
+      this.impulso = true;
+      this.forcaGravidade = 0;
+      
+      this.sprite = spr_jogadorPulo;
+      this.frame = 0;
+
+    }
+    if(this.puloCoolT <= relog0.segundos){this.puloCool = true;}
+
+    // impulso
+    if (this.impulso){
+
+      this.colisaoCima();
+      if(this.colidiuCima == false){
+        this.y -= (1.1 - ((this.ultimoChao - this.y) / (this.alturaPulo))) * this.forcaImpulso
+        }
+      
+        if(this.colidiuCima == true){
+        this.forcaGravidade = this.gravidade0;
+        }
+
+      if(this.ultimoChao - this.y >= this.alturaPulo)
+      {
+        this.impulso = false;
+        this.forcaGravidade = this.gravidade0;
+        // this.sprite = spr_jogador;
+        // this.frame = 0;
+      }
+    }
+
+    //direita
+    if((rightPressed || xPressed) && this.podeDireita){
+      this.colisaoDireita();   
+      if(this.colidiuDireita == false){
+        // this.sprite = spr_jogadorDireita;
+        this.tFrame = 0.1;
+        // this.frame = 0;
+        this.x += this.passoDireita;}
+    };
+    // // limite da tela na direita
+    // if(this.x > canvas.width-16){this.x = canvas.width-16; }
+    //warp da esquerda
+    if(this.x > canvas.width+this.largura){this.x = -2;}
+
+    //esquerda
+    if((leftPressed || zPressed) && this.podeEsquerda){
+      this.colisaoEsquerda();
+      if(this.colidiuEsquerda == false){this.x -= this.passoEsquerda;}
+    }
+    //warp da esquerda
+    if(this.x < -this.largura){this.x = canvas.width;}
+    
+    //escorrega
+    if(downPressed && this.podeBaixo == true){
+      vento('direita', -this.passoEsquerda/3, this);
+      this.podeCima = false;
+      this.podeDireita = false;
+      this.podeEsquerda = false;
+      this.frame = 0;
+      this.sprite = spr_jogadorAbaixa;
+    }
+    if(downPressed == false){
+      this.podeCima = true;
+      this.podeDireita = true;
+      this.podeEsquerda = true;
+      this.sprite = spr_jogador;
+    }
+    if(downPressed && this.somSlideCool && this.noAr == false){
+      this.somSlideCool = false;
+      this.somSlideCoolT = relog0.segundos;
+      somSlide();
+    }
+    if(downPressed && relog0.segundos >= this.somSlideCoolT + 0.15){this.somSlideCool = true;}
+
+  } // fim do método controle
+
+  colisaoCima(){
+
+    atualizaPos(this);
+
+    //plataformas
+    for (var i = 0; i < plataformas.length; i++){
+
+      // colisão em cima
+      if(
+        this.ladoCima - this.forcaImpulso  < plataformas[i].ladoBaixo &&
+        this.ladoBaixo > plataformas[i].ladoBaixo
+        &&
+        (
+          this.ladoDireito > plataformas[i].ladoEsquerdo &&
+          this.ladoDireito < plataformas[i].ladoDireito
+          ||
+          this.ladoEsquerdo > plataformas[i].ladoEsquerdo &&
+          this.ladoEsquerdo < plataformas[i].ladoDireito
+          )
+      ){
+        this.colidiuCima = true;
+        this.colidiu = true;
+        this.impulso = false;
+        this.y = plataformas[i].ladoBaixo +0;
+        // this.y = this.yAnterior;
+        // console.log("colidiu cima");
+        break;
+      } else {this.colidiuCima = false;}
+    } 
+
+  }// fim do método colisao cima
+  
+  colisaoDireita(){
+
+    atualizaPos(this);
+
+    //plataformas
+    for (var i = 0; i < plataformas.length; i++){
+
+      //colisão na direita
+      if(
+        this.ladoDireito + this.passoDireita > plataformas[i].ladoEsquerdo &&
+        this.ladoDireito < plataformas[i].ladoDireito
+        &&
+        (
+        this.ladoCima > plataformas[i].ladoCima &&
+        this.ladoCima < plataformas[i].ladoBaixo
+        ||
+        this.ladoBaixo > plataformas[i].ladoCima &&
+        this.ladoBaixo < plataformas[i].ladoBaixo
+        )
+        ){
+        // somParede();
+        this.colidiuDireita = true;
+        this.colidiu = true;
+        this.x = plataformas[i].ladoEsquerdo - this.largura - 0;
+        this.colidiuCom = i;
+        // console.log("colidiu direita");
+        break;
+      } else {this.colidiuDireita = false;}
+    } 
+
+  }// fim do método colisao direita
+
+  colisaoEsquerda(){
+
+    atualizaPos(this);
+
+    //plataformas
+    for (var i = 0; i < plataformas.length; i++){
+
+      //colisão na esquerda
+      if(
+        this.ladoEsquerdo - this.passoEsquerda < plataformas[i].ladoDireito &&
+        this.ladoEsquerdo > plataformas[i].ladoEsquerdo
+        &&
+        (
+        this.ladoCima > plataformas[i].ladoCima &&
+        this.ladoCima < plataformas[i].ladoBaixo
+        ||
+        this.ladoBaixo > plataformas[i].ladoCima &&
+        this.ladoBaixo < plataformas[i].ladoBaixo
+        )
+        ){
+        // somParede();
+        this.colidiuEsquerda = true;
+        this.x = plataformas[i].ladoDireito + 0;
+        this.colidiuCom = i;
+        // console.log("colidiu esquerda");
+        break;
+      } else {this.colidiuEsquerda = false;}
+    } 
+
+  }// fim do método colisao esquerda
+
+  gravidade(){
+
+    atualizaPos(this);
+
+    //plataformas
+    for (var i = 0; i < plataformas.length; i++){
+  
+      //colisão baixo
+      if(
+        this.ladoBaixo + this.forcaGravidade > plataformas[i].ladoCima &&
+        this.ladoCima + this.forcaGravidade < plataformas[i].ladoCima
+        &&
+        (
+        this.ladoDireito > plataformas[i].ladoEsquerdo &&
+        this.ladoDireito < plataformas[i].ladoDireito
+        ||
+        this.ladoEsquerdo > plataformas[i].ladoEsquerdo &&
+        this.ladoEsquerdo < plataformas[i].ladoDireito
+        )
+        ){
+        if(this.somParedePode == true){somParede(); this.somParedePode = false;}
+        this.colidiuBaixo = true;
+        this.noAr = false;
+        // console.log(this.colidiuBaixo);
+        this.y = plataformas[i].ladoCima - this.altura -0;
+        this.yAnterior = this.y;
+        this.colidiuCom = i;
+        break;
+      } else {this.colidiuBaixo = false; this.noAr = true;}
+    }
+
+    // gravidade
+    if (this.colidiuBaixo == false && this.noAr == true){
+      this.somParedePode = true;
+      this.y += this.forcaGravidade;
+    }
+
+  }// fim do método gravidade
+
+  vento(){
+  
+  // vento normal
+  if(this.colidiuMorte == false){
+  // forcaVento = 1 + Math.floor(((100 - jogador.mente)/100)*1.5);
+  if (this.vida > 0){forcaVento = 1+(1.5*(1-(this.mente/100)));}
+  } else {forcaVento = 0;}
+
+  } // fim do método vento
+
+} // fim da class Jogador
+
+////////////////////////////////////////////////////////////////////////////////
+class Cartas extends Sprite{
+  constructor(x, y, lado, sprite, tFrame, qual){
+    super(x, y, lado, sprite, tFrame);
+    
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+    
+    this.centroX = this.x + this.largura/2;
+    this.centroY = this.y + this.altura/2;
+
+    this.ladoEsquerdo = this.x;
+    this.ladoDireito = this.x + this.largura;
+    this.ladoCima = this.y;
+    this.ladoBaixo = this.y + this.altura;
+
+    this.pega = false;
+    this.estacionada = false;
+
+    this.ativaT = 0;
+    this.baralho = [
+      ['in love', spr_love, 3, 'You found love!', 'Gravity is weaker' ],
+      ['something lost', spr_lost, 3, 'It was important but is', 'gone, gravity is stronger' ],
+      ['medical problem', spr_medical, 2, 'Oh, no! You are hurt!', 'Movement is reduced' ],
+      ['epiphany', spr_epiphany, 3, 'Ok! That makes sense!', 'the paths are clearer' ],
+      ['achievement', spr_achievement, 2, 'You finally did that thing!', "Death won't be so close" ],
+      ['blackout', spr_blackout, 2, 'Oh, oh! Power is down!', "It will be dark" ],
+      ['overwhelmed', spr_overwhelmed, 3, "Sometimes it's too much.", "You are just tinny" ],
+      ['bravery', spr_bravery, 3, "Do what has to be done.", "Menace of Death reduced" ],
+    ]
+    this.ativaSprite = spr_cartaAtiva;
+
+    this.qual = qual;
+    // this.qual = random(0, this.baralho.length - 1);
+    // this.qual = 5;
+    this.ativaNome = this.baralho[this.qual][0];
+    this.ativaEfeito = this.baralho[this.qual][1];
+    this.ativaDuracao = this.baralho[this.qual][2];
+    this.ativaDescr1 = this.baralho[this.qual][3];
+    this.ativaDescr2 = this.baralho[this.qual][4];
+  
+    this.oQsou = 'carta';
+  }
+
+  existe(){
+    cartaAnterior = this.qual;
+    this.desenha();
+    if(this.pega == false){
+      
+      if(this.centroX > 500){this.centroX--;}
+      if(this.centroX < 500){this.centroX++;}
+      if(this.centroY > canvas.height/2){this.centroY--;}
+      if(this.centroY < canvas.height/2){this.centroY++;}
+
+      txt1.puro('?',this.centroX+random(-2,2), this.centroY+10, "32px Arial", 'center', 1);
+      if(txt1.x > 2){txt1.x = this.centroX + 2;}
+      if(txt1.x < -2){txt1.x = this.centroX - 2;}
+    }
+
+    // qdBordas(this.ladoEsquerdo, this.ladoCima, this.ladoDireito, this.ladoBaixo, true, true, true, true, 1, 5)
+    
+  }// fim do método existe
+
+  estaciona(){
+    if(this.pega == true && this.estacionada == false){
+
+      if(this.centroX == 380 && this.centroY == 666){
+        this.estacionada = true;
+        coletados++;
+        
+        this.sprite = spr_carta;
+        this.frame = 0;        
+        this.ativaT = idade;
+      }
+      else{
+        this.sprite = spr_cartaEstaciona;
+        if(this.centroX > 380){this.centroX -= 1;}
+        if(this.centroX < 380){this.centroX += 1;}
+        if(this.centroY > 666){this.centroY -= 1;}
+        if(this.centroY < 666){this.centroY += 3;}
+      }
+
+    }
+  } // fim do método estaciona
+
+  ativada(){
+    if(this.estacionada == true){
+
+        if(idade < this.ativaT + this.ativaDuracao + 1){
+          
+          // sprite
+          this.sprite = this.ativaSprite;
+          this.frame = 0;
+
+          // nome
+          qdSolido(454, 604, 146, 22, 3);
+          txt1.puro(this.ativaNome, 528, 621, "18px Arial", 'center', 1);
+          
+          // efeito
+          txt1.puro(this.ativaDescr1, 420, 653, "16px Arial", 'left', 4);
+          txt1.puro(this.ativaDescr2, 420, 673, "16px Arial", 'left', 4);
+          txt1.puro('until the end of year '+(this.ativaT + this.ativaDuracao), 420, 693, "16px Arial", 'left', 4);
+          
+          this.cartaEfeito = new Sprite(this.centroX, this.centroY, 3, this.ativaEfeito, 1);
+          this.cartaEfeito.desenha();
+
+          this.efeito = new Sprite(jogador.x +12, jogador.y-10, 2, this.ativaEfeito, 1);
+          this.efeito.desenha();
+          
+          // aplica efeitos
+          if(this.ativaNome == 'in love'){
+            jogador.alturaPulo = 300; 
+            jogador.forcaImmpulso = 2; 
+            jogador.gravidade0 = 2; 
+          }
+
+          if(this.ativaNome == 'something lost'){
+            jogador.alturaPulo = 180; 
+            jogador.forcaImmpulso = 5;
+            jogador.gravidade0 = 20;
+          }
+
+          if(this.ativaNome == 'medical problem'){
+            forcaVentoJogador = 2;
+            jogador.passoDireita = 4;
+            jogador.passoEsquerda = 6;
+          }
+
+          if(this.ativaNome == 'epiphany'){
+            plataformasV = [];
+          }
+
+          if(this.ativaNome == 'achievement'){
+            morte.distMorte = 512;
+          }
+
+          if(this.ativaNome == 'blackout'){
+            corFundo = 4;
+          }
+          
+          if(this.ativaNome == 'overwhelmed'){
+            jogador.lado = 1;
+            jogador.podeBaixo = false;
+          }
+
+          if(this.ativaNome == 'bravery'){
+            morte.cartaAtiva = true;
+          }
+        }
+
+        // desfaz efeitos
+        if(idade >= this.ativaT + this.ativaDuracao + 1){
+          
+          jogador.alturaPulo = 210;
+          jogador.forcaImmpulso = 18;
+          jogador.gravidade0 = 10;
+          forcaVentoJogador = 1;
+          jogador.passoDireita = 6;
+          jogador.passoEsquerda = 9;
+          morte.distMorte = 256;
+          corFundo = 1;
+          jogador.lado = 3;
+          jogador.podeBaixo = true;
+          morte.cartaAtiva = false;
+          // jogador.sprite = spr_jogador;
+          // jogador.tFrame = 0;
+          
+          if(this.ativaNome == 'epiphany'){
+            plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 70, 10, spr_pltV1, 10));
+            plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 220, 10, spr_pltV2, 10));
+            plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 360, 10, spr_pltV1, 10));
+            plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 479, 10, spr_pltV2, 10));
+          }
+
+          // cria carta nova
+          carta = criaCarta();
+        }
+
+    }
+  }
+
+} // fim da class cartas
+
+////////////////////////////////////////////////////////////////////////////////
+class Mortes extends Sprite{
+  constructor(x, y, lado, sprite, tFrame){
+    super(x, y, lado, sprite, tFrame);
+    
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+    
+    this.centroX = this.x + this.largura/2;
+    this.centroY = this.y + this.altura/2;
+
+    this.ladoEsquerdo = 0;
+    this.ladoDireito = 0;
+    this.ladoCima = 0;
+    this.ladoBaixo = 0;
+
+    this.ladoEsquerdo1 = 0;
+    this.ladoDireito1 = 0;
+    this.ladoCima1 = 0;
+    this.ladoBaixo1 = 0;
+
+    this.ladoEsquerdo2 = 0;
+    this.ladoDireito2 = 0;
+    this.ladoCima2 = 0;
+    this.ladoBaixo2 = 0;
+
+    this.ladoEsquerdo3 = 0;
+    this.ladoDireito3 = 0;
+    this.ladoCima3 = 0;
+    this.ladoBaixo3 = 0;
+
+    this.distMorte = 256;
+    this.limiteMorte = 256;
+
+    this.cartaAtiva = false;
+    
+    this.oQsou = 'morte';
+  }
+
+  existe(){
+
+    // ajusta o lado do sprite da morte
+    if(this.cartaAtiva == false){this.lado = 3+ Math.ceil(17 * ((100 - jogador.alma)/100));} else {this.lado = 1;}
+
+    // inverte o sprite da morte
+    if(jogador.centroX < morte.centroX){morte.sprite = spr_morteR}
+    else{morte.sprite = spr_morte;}
+    
+    // ajusta áreas de colisão
+    if(this.sprite == spr_morte){
+
+      // corpo
+      this.ladoDireito1 = this.x + this.largura * 0.77;
+      this.ladoEsquerdo1 = this.x;
+      this.ladoCima1 = this.ladoCima;
+      this.ladoBaixo1 = this.ladoBaixo * 0.97;
+
+      // foice
+      this.ladoDireito2 = this.ladoDireito;
+      this.ladoEsquerdo2 = this.ladoEsquerdo;
+      this.ladoCima2 = this.y + this.altura * 0.03;
+      this.ladoBaixo2 = this.y + this.altura * 0.2;
+
+      // mão da foice
+      this.ladoDireito3 = this.x + this.largura * 0.85;
+      this.ladoEsquerdo3 = this.ladoEsquerdo;
+      this.ladoCima3 = this.y + this.altura * 0.28;
+      this.ladoBaixo3 = this.y + this.altura * 0.47;
+    }
+
+    if(this.sprite == spr_morteR){
+
+      // corpo
+      this.ladoDireito1 = this.x + this.largura;
+      this.ladoEsquerdo1 = this.x + this.largura * 0.23;
+      this.ladoCima1 = this.ladoCima;
+      this.ladoBaixo1 = this.ladoBaixo * 0.97;
+
+      // foice
+      this.ladoDireito2 = this.ladoEsquerdo;
+      this.ladoEsquerdo2 = this.ladoDireito;
+      this.ladoCima2 = this.y + this.altura * 0.03;
+      this.ladoBaixo2 = this.y + this.altura * 0.2;
+
+      // mão da foice
+      this.ladoDireito3 = this.x + this.largura;
+      this.ladoEsquerdo3 = this.x + this.largura * 0.15;
+      this.ladoCima3 = this.y + this.altura * 0.28;
+      this.ladoBaixo3 = this.y + this.altura * 0.47;
+    }
+
+    this.desenha();
+
+    // qdBordas(this.ladoEsquerdo1, this.ladoCima1, this.ladoDireito1, this.ladoBaixo1, true, true, true, true, 1, 5)
+    // qdBordas(this.ladoEsquerdo2, this.ladoCima2, this.ladoDireito2, this.ladoBaixo2, true, true, true, true, 1, 5)
+    // qdBordas(this.ladoEsquerdo3, this.ladoCima3, this.ladoDireito3, this.ladoBaixo3, true, true, true, true, 1, 5)
+    
+  }// fim do método existe
+
+  // persegue o jogador
+  persegue(){
+    if(perseguir){
+      // this.distMorte = 256;
+      // this.limiteMorte = 256;
+      if(jogador.centroX > this.centroX &&
+        jogador.centroX - this.centroX > this.distMorte &&
+        this.centroX < canvas.width - this.limiteMorte
+        ){this.centroX++}
+      if(jogador.centroX > this.centroX &&
+        jogador.centroX - this.centroX <= this.distMorte &&
+        this.centroX > this.largura/2+20
+        ){this.centroX--}
+
+      if(jogador.centroX < this.centroX &&
+        this.centroX - jogador.centroX > this.distMorte &&
+        this.centroX > this.limiteMorte
+        ){this.centroX-=2}
+    
+      if(this.centroY != jogador.centroY){
+        if(this.centroY > jogador.centroY){this.centroY--}
+        if(this.centroY < jogador.centroY){this.centroY++}
+      };
+      if(this.centroY < this.altura/2+20){this.centroY = this.altura/2+20}
+      if(this.centroY + this.altura/2 > 620){this.centroY = 620 - this.altura/2}
+
+    }
+  } // fim do método persegue
+
+} // fim da class Mortes
+
+////////////////////////////////////////////////////////////////////////////////
+class Moeda{
+  constructor(x, y, qualItem){
+    this.centroX = x;
+    this.centroY = y;
+    this.lado = 4;
+    
+    this.disponivel = true;
+    this.pega = false;
+    this.oQSou = 'moeda';
+    this.nome = '';
+
+    this.listaItens = [
+      [spr_burger, 1, 2, 2], 
+      [spr_maca, 2, 1, 1], 
+      [spr_pizza, 1, 2, 3], 
+      [spr_salada, 3, 0, 1], 
+      [spr_sorvete, 0, 3, 3], 
+      [spr_castanha, 1, 1, 1], 
+      [spr_sushi, 2, 2, 2], 
+      [spr_chocolate, 0, 4, 4], 
+      [spr_refrigerante, 0, 1, 1], 
+      [spr_dormir8h, 8, 8, 8], 
+      [spr_cafe, 0, 5, 2], 
+      [spr_livro, 0, 5, 5], 
+      [spr_exercicios, 6, 2, 2], 
+      [spr_dancar, 5, 2, 6], 
+      // [spr_festaNoiteToda, 0, 1, 2], 
+      // [spr_cochilar, 4, 1, 1], 
+      // [spr_videogame, 0, 3, 1], 
+      // [spr_amigos, 0, 3, 3], 
+      // [spr_caminhada, 2, 2, 2], 
+      // [spr_arrozCarneSalada, 2, 1, 1], 
+      // [spr_queijo, 1, 1, 2], 
+      // [spr_violao, 1, 2, 2], 
+      // [spr_desenhar, 0, 2, 3], 
+      // [spr_surf, 2, 3, 3], 
+      // [spr_surfTheWeb, 0, 4, 1], 
+      // [spr_meditar, 3, 3, 3], 
+      // [spr_encherAcara, -3, -1, 4], 
+    ]
+    this.qual = qualItem;
+    this.sprite = this.listaItens[this.qual][0];
+    this.corpo = this.listaItens[this.qual][1];
+    this.mente = this.listaItens[this.qual][2];
+    this.alma = this.listaItens[this.qual][3];
+    // this.sorte = this.listaItens[this.qual][4];
+
+
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+    this.ladoEsquerdo = this.x;
+    this.ladoDireito = this.x + this.largura;
+    this.ladoCima = this.y;
+    this.ladoBaixo = this.y + this.altura;
+
+    this.tUltimoFrame = 0;
+    this.tFrame = 0;
+    this.frame = 0
+  }
+
+  desenha(quemSouEu){
+    
+    if(this.pega == true){
+      moedas.splice(quemSouEu, 1);
+    }
+
+    atualizaPos(this);
+
+    if(this.pega == false)
+    {
+
+      for(var linha = 0; linha < this.sprite[this.frame].length; linha++){
+          
+          for (var coluna = 0; coluna < this.sprite[this.frame][linha].length; coluna++){
+
+              if (this.sprite[this.frame][linha][coluna] != 0){
+                  ctx.beginPath();
+                  ctx.rect(this.x + (coluna * this.lado), this.y + (linha * this.lado), this.lado, this.lado);
+                  ctx.fillStyle = paleta[this.sprite[this.frame][linha][coluna]];
+                  ctx.fill();
+                  ctx.closePath();
+              }
+
+              if (this.tUltimoFrame + this.tFrame <= relog0.segundos){
+                  this.frame++;
+                  if(this.frame == this.sprite.length){this.frame = 0;}
+                  this.tUltimoFrame = relog0.segundos;
+              }
+          }
+      }
+    }
+
+  } // fim do método desenha
+
+} // fim da class moeda
+
+////////////////////////////////////////////////////////////////////////////////
+class Qdpassante{
+  constructor(tipo){
+  
+  this.x = random(canvas.width, canvas.width * 2);
+  this.y = random(2, 554);
+  
+  this.limiteSuperior = 0;
+  this.limiteInferior = 0;
+
+  this.ladoMin = 3;
+  this.ladoMax = 3;
+  // this.lado = random(this.ladoMin, this.ladoMax);
+  this.lado = 4;
+  this.largura = 8;
+
+  this.velocidade = 5;
+  
+  this.cor = random(2,3);
+  this.tipo = tipo;
+  this.oQsou = 'qds';
+  
+  }
+  
+    passa(){
+      
+      if(this.tipo == 'morte'){
+        if(this.y < morte.centroY){this.y += 1;}
+        if(this.y > morte.centroY){this.y -= 1;}
+        this.largura = 3;
+        this.lado = 3;
+      }
+      
+      ctx.beginPath();
+      ctx.rect(this.x, this.y, this.largura, this.lado);
+      ctx.fillStyle = paleta[this.cor];
+      ctx.fill();
+      ctx.closePath();
+
+      this.x -= this.velocidade;
+      
+      if(this.x < -10){
+        this.x = random(canvas.width, canvas.width * 2);
+        this.y = random(2, 554);
+        }
+
+    } // fim do método passa
+  }
+
+////////////////////////////////////////////////////////////////////////////////
+class Plataforma extends Sprite{
+  constructor(x, y, lado, sprite, tFrame){
+    super(x, y, lado, sprite, tFrame);
+    
+    this.largura = this.lado * this.sprite[0][0].length;
+    this.altura = this.lado * this.sprite[0].length;
+    this.x = Math.floor(this.centroX - this.largura/2);
+    this.y = Math.floor(this.centroY - this.altura/2);
+    
+    this.ladoEsquerdo = 0;
+    this.ladoDireito = 0;
+    this.ladoCima = 0;
+    this.ladoBaixo = 0;
+    
+    this.renascer = false;
+    this.oQsou = 'parede';
+  }
+
+  existe(){
+
+    atualizaPos(this);
+    this.desenha();
+
+    // qdBordas(this.ladoEsquerdo, this.ladoCima, this.ladoDireito, this.ladoBaixo, true, true, true, true, 1, 5)
+    
+  }// fim do método existe
+
+} // fim da class parede
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Funções
+
+
+//////////////////////////////////////////////////////////////////////////////
+//detecção de teclas
+
+// detecta quanto uma tecla é pressionada
+document.addEventListener("keydown", keyDownHandler, false);
+function keyDownHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = true;
+    }
+    
+    if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = true;
+    }
+
+    if(e.key == "Up" || e.key == "ArrowUp") {
+        upPressed = true;
+    }
+
+    if(e.key == "Down" || e.key == "ArrowDown") {
+        downPressed = true;
+    }
+
+    if(e.key == "Enter") {
+         enterPressed = true;
+    }
+
+    if(e.key == "x" || e.key == "X") {
+        xPressed = true;
+    }
+    
+    if(e.key == "z" || e.key == "Z") {
+        zPressed = true;
+    }
+}
+
+// detecta quanto uma tecla é solta
+document.addEventListener("keyup", keyUpHandler, false);
+function keyUpHandler(e) {
+    if(e.key == "Right" || e.key == "ArrowRight") {
+        rightPressed = false;
+    }
+    
+    if(e.key == "Left" || e.key == "ArrowLeft") {
+        leftPressed = false;
+    }
+
+    if(e.key == "Up" || e.key == "ArrowUp") {
+        upPressed = false;
+    }
+
+    if(e.key == "Down" || e.key == "ArrowDown") {
+        downPressed = false;
+    }
+
+    if(e.key == "Enter") {
+        enterPressed = false;
+    }
+
+    if(e.key == "x" || e.key == "X") {
+        xPressed = false;
+    }
+
+    if(e.key == "z" || e.key == "Z") {
+      zPressed = false;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//funções operacionais
+
+function random(min, max) {  // Com max e min inclusivo
+  min = Math.ceil(min); //rounds a number up to the next largest integer.
+  max = Math.floor(max); //returns the largest integer less than or equal to a given number
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+function ajustaResolucao(numero, resolucao){
+  return parseFloat(Number(numero).toFixed(resolucao));
+}
+
+function qdSolido(x, y, largura, altura, cor){
+  ctx.beginPath();
+  ctx.rect(x, y, largura, altura);
+  ctx.fillStyle = paleta[cor];
+  ctx.fill();
+  ctx.closePath();
+}
+
+function qdBordas(x, y, largurapx, alturapy, cima, direita, baixo, esquerda, traco, cor){
+  ctx.beginPath();
+    if(cima == true){
+      ctx.moveTo(x, y);
+      ctx.lineTo(largurapx, y); 
+    }
+    if(direita == true){
+      ctx.moveTo(largurapx, y);
+      ctx.lineTo(largurapx, alturapy); 
+    }
+    if(baixo == true){
+      ctx.moveTo(largurapx, alturapy);
+      ctx.lineTo(x, alturapy); 
+    }
+    if(esquerda == true){
+      ctx.moveTo(x, alturapy);
+      ctx.lineTo(x, y); 
+    }
+  ctx.lineWidth = traco;
+  ctx.strokeStyle = paleta[cor];
+  ctx.stroke();
+  ctx.closePath();
+}
+
+function vento(direcao, intensidade, entidade){
+  
+  if(direcao == 'direita'){
+    entidade.x -= intensidade;
+    jogador.colisaoDireita();
+    if(entidade.x < - entidade.largura){
+      if(entidade.renascer == false){
+        var renascer = random(1,2);
+        if(renascer == 2){
+          entidade.renascer = true;
+        }
+      }
+      entidade.x = canvas.width + 10;
+    }
+  }
+}
+
+function resetaTxts(){
+    txt1.setup = false;
+    txt2.setup = false;
+    txt3.setup = false;
+    txt4.setup = false;
+    txtp.setup = false;  
+}
+
+function criaCarta(){
+    
+    cartaX = [-random(100, canvas.width), canvas.width+random(100, canvas.width)];
+    var cartaPosx = cartaX[random(0,1)];
+    var cartaPosY = extra * -random(canvas.height, 2*canvas.height);
+    console.log(idade);
+
+    var qualSera = random(0, 7);
+    while (qualSera == cartaAnterior){qualSera = random(0, 7);}
+    if(idade > 3){carta = new Cartas(cartaPosx, cartaPosY, 4, spr_carta, 0.3, qualSera);}
+    else {carta = new Cartas(Math.floor(cartaPosx*1.6), Math.floor(cartaPosY*1.6), 4, spr_carta, 0.3, qualSera)}
+
+    return carta;
+}
+
+function atualizaPos(entidade){
+    entidade.largura = entidade.lado * entidade.sprite[0][0].length;
+    entidade.altura = entidade.lado * entidade.sprite[0].length;
+    entidade.ladoEsquerdo = entidade.x;
+    entidade.ladoDireito = entidade.x + entidade.largura;
+    entidade.ladoCima = entidade.y;
+    entidade.ladoBaixo = entidade.y + entidade.altura;
+
+    entidade.centroX = entidade.x + entidade.largura/2;
+    entidade.centroY = entidade.y + entidade.altura/2;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// funções de efeitos sonoros
+
+function somConfirma(){
+  //constructor(nota, duracao, tipo, volume)// sine, square, triangle, sawtooth
+  som = new Notas("mi2", 2, 0.3, "sine");
+  som.toca();
+  som = new Notas("mi4", 2, 0.3, "sine");
+  som.toca();
+}
+
+function somMoeda(){
+  som = new Notas("do3", 2, 0.05, "sine");
+  som.toca();
+  som = new Notas("si2", 2, 0.05, "sine");
+  som.toca();
+}
+
+function somCarta(){
+  som = new Notas("fa3", 2, 0.1, "sine");
+  som.toca();
+  som = new Notas("mi5", 2, 0.1, "sine");
+  som.toca();
+}
+
+function somParede(){
+  som = new Notas("sol2", 0.3, 0.2, "sine");
+  som.toca();
+}
+
+function somPulo(){
+  som = new Notas("do4", 1, 0.03, "sawtooth");
+  som.toca();
+}
+
+function somSlide(){
+  som = new Notas("do3", 0.2, 0.05, "sawtooth");
+  som.toca();
+}
+
+function somToqueMorte(){
+  som = new Notas("fa2", 0.2, 0.02, "sawtooth");
+  som.toca();
+  som = new Notas("fa3", 0.3, 0.03, "sawtooth");
+  som.toca();
+}
+
+// function somPego(){
+//   som = new Notas("si2", 2, 0.2, "sawtooth");
+//   som.toca();
+// }
+
+// function somPortaAbriu(){
+//   som = new Notas("sol5", 3, 0.7, "triangle");
+//   som.toca();
+// }
+
+// function somPortaFechou(){
+//   som = new Notas("sol2", 3, 0.7, "sawtooth");
+//   som.toca();
+// }
+
+// function somPortal (){
+//   som = new Notas("sol7", 4, 0.1, "square");
+//   som.toca();
+// }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Músicas
+
+//////////////////////////////////////////////////////////////////////////////
+// função para tocar as músicas
+
+function tocaMusica(musica){
+  for (var i = 0; i < musica.length; i++){
+    musica[i].toca();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// funções para criar as músicas
+
+function criaMusicaMuda(){
+  temaMudo1 = new Instrumento(false, 0, 
+    [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+      'la3', 4.0, 0.1, 'sine',
+    ]);
+  
+  temaMudo2 = new Instrumento(false, 0, 
+    [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+      'la5', 4.0, 0.1, 'sine',
+    ]);
+
+    temaMudo = [temaMudo1, temaMudo2];
+}
+
+
+function criaTemaTutorial(){
+
+  tema01_1 = new Instrumento(true, 0.1,
+    [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+    
+    'la2', 1.2, 0.0001, 'sine',
+    
+    'si3', 0.3, 0.2, 'sine',
+    'la3', 0.1, 0.2, 'sine',
+    'sol3', 0.1, 0.2, 'sine',
+    'sol3', 0.1, 0.2, 'sine',
+
+    'mi3', 0.3, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    
+    'mi3', 0.3, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+
+    'mi3', 0.3, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+    'mi3', 0.1, 0.2, 'sine',
+
+    'mi3', 0.3, 0.2, 'sine',
+    'mi3', 0.3, 0.2, 'sine',
+    'mi3', 0.3, 0.2, 'sine',    
+
+    'si5', 0.3, 0.1, 'triangle',
+    'la5', 0.3, 0.1, 'triangle',
+    'sol5', 0.3, 0.1, 'triangle',
+    'sol5', 0.3, 0.1, 'triangle',
+    ]);
+
+    temaTutorial = [tema01_1];
+}
+
+function criaTemaPrincipal(){
+
+  tema02_1 = new Instrumento(true, 0.1,
+    [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+    
+    'la2', 1.2, 0.0001, 'sine',
+    
+    'do2', 0.3, 0.2, 'sine',
+    're2', 0.1, 0.2, 'sine',
+    'do2', 0.1, 0.2, 'sine',
+    're2', 0.1, 0.2, 'sine',
+
+    'fa2', 0.1, 0.2, 'sine',
+    'fa2', 0.1, 0.2, 'sine',
+    'fa2', 0.1, 0.2, 'sine',
+    
+    'do2', 0.3, 0.2, 'sine',
+    're2', 0.1, 0.2, 'sine',
+    'do2', 0.1, 0.2, 'sine',
+    're2', 0.1, 0.2, 'sine',
+
+    'si2', 0.3, 0.2, 'sine',
+    'si2', 0.3, 0.2, 'sine',
+    'si2', 0.3, 0.2, 'sine',  
+    
+    'do5', 0.3, 0.2, 'sine',
+    're5', 0.1, 0.2, 'sine',
+    'do5', 0.1, 0.2, 'sine',
+    're5', 0.1, 0.2, 'sine',
+
+    'fa5', 0.1, 0.2, 'sine',
+    'fa5', 0.1, 0.2, 'sine',
+    'fa5', 0.1, 0.2, 'sine',
+    
+    'do5', 0.3, 0.2, 'sine',
+    're5', 0.1, 0.2, 'sine',
+    'do5', 0.1, 0.2, 'sine',
+    're5', 0.1, 0.2, 'sine',
+
+    'si5', 0.3, 0.2, 'sine',
+    'si5', 0.3, 0.2, 'sine',
+    'si5', 0.3, 0.2, 'sine',  
+
+    'la2', 1.2, 0.0001, 'sine',
+
+    ]);
+
+  // tema01_2 = new Instrumento(true, 13.8,
+  //   [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+  //   'la3', 1.2, 0.0001, 'sine',
+  //   ]);
+
+    temaPrincipal = [tema02_1];
+
+
+}
+
+function criaTemaGameOver(){
+
+  tema03_1 = new Instrumento(true, 0.1,
+    [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+    
+    // 'la2', 1.2, 0.0001, 'sine',
+    
+    'do5', 0.5, 0.2, 'sine',
+    'do5', 0.7, 0.2, 'sine',
+    'do5', 0.5, 0.2, 'sine',
+    'si4', 0.7, 0.2, 'sine',
+        
+    'la2', 1.2, 0.0001, 'sine',
+
+    ]);
+
+  // tema01_2 = new Instrumento(true, 13.8,
+  //   [//nota, duração, volume, tipo // sine, square, triangle, sawtooth
+  //   'la3', 1.2, 0.0001, 'sine',
+  //   ]);
+
+    temaGameOver = [tema03_1];
+
+
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Cenas
+
+/////////////////////////////////////////////////////////////////////////////////////////
+function telaInicial(){
+
+if(cenaCarregada == false){
+  if(fim == true){
+    preSetupCarregado = false;
+    preSetup();
+    final = false;
+  }
+  txtY = -20;
+  pagina = 1;
+  cenaCarregada = true;
+  jogador = new Jogadores(420, 0, 3, spr_jogador, 0.2); //x, y, lado, tframe
+  hitX = 900;
+  morte = new Sprite(hitX, 220, 2, spr_morteR, 0.7);
+  podeEnter = false;
+}
+
+//fundo
+qdSolido(0, 0, canvas.width, canvas.height, 1);
+
+//logo js13k desce
+if(pagina == 1){
+  txt1.puro('js13kGames', canvas.width/2, txtY, '96px Impact', 'center', 3);
+  if(txtY < 392){txtY += 4;}
+  if(txtY == 392){txtY += 4; tEspera = relog0.segundos;}
+  if(txtY == 396){txt1.puro('*tu-plim!*', canvas.width/2, txtY+20, '12px verdana', 'center', 3);}
+  if(relog0.segundos >= tEspera + 1.5){
+    pagina = 2;
+    tEspera = relog0.segundos;
+    txt1.setup = false;
+  }
+}
+
+if(pagina == 2){
+  qdSolido(0, 0, canvas.width, canvas.height, 2);
+  txt1.surge('deadly', '64px Verdana', 'center', 2, 2, 3, 3, canvas.width/2, 300, 0.1);
+  txt2.surge('jumps & slides', '64px Verdana', 'center', 2, 2, 3, 3, canvas.width/2, 360, 0.3);
+  txt3.surge('on', '64px Arial', 'center', 2, 2, 3, 3, 280, 420, 0.6);
+  txt4.surge('the', '64px Verdana', 'center', 2, 2, 3, 3, 384, 420, 0.9);
+  txt5.surge('run', '64px Verdana', 'center', 2, 2, 3, 3, 508, 420, 1.2);
+  // txt5.surge('go', '64px Verdana', 'center', 2, 2, 3, 3, 494, 420, 1.2);
+
+  if(relog0.segundos >= tEspera + 1){  
+    morte.centroX = hitX;
+    morte.desenha();
+    if(hitX > canvas.width/2){hitX -= 2;}
+    if(hitX <= canvas.width/2){
+      txt6.pisca("press ENTER to begin", "press ENTER to begin",
+    "24px Arial", 'center',
+    3, 4,
+    canvas.width/2, 486,
+    0.5, 0.5
+    );
+    // créditos roda pé
+    txtp.puro(". js13k - 2022 .",
+    canvas.width/2, canvas.height/2+200, "16px Arial", 'center', 3);  
+
+    // créditos roda pé
+    txtp.puro("game by github.com/Github2diogo",
+    canvas.width/2, canvas.height/2+220, "16px Arial", 'center', 3);  
+    
+    podeEnter = true;
+    }
+  }
+}
+
+// controle jogador
+document.onkeyup = function (e) {
+  if(e.code == 'Enter'){
+    if(podeEnter == true){
+    cenaCarregada = false;
+    palco.cena = 1;
+    somConfirma();
+    }
+  }
+}
+} // fim da cena Tela inicial
+
+///////////////////////////////////////////////////////////////////////////
+// cenas
+///////////////////////////////////////////////////////////////////////////
+function tutorial(){
+if(cenaCarregada == false){
+  relog0 = new Relogio();
+  relog0Roda = true;
+  cenaCarregada = true;
+  resetaTxts();
+  gameoverY = -200;
+  podeEnter = false;
+
+  podeMusica = true;
+  criaTemaTutorial();
+  palco.musica = "temaTutorial";
+
+  ui = new UIs();
+
+  forcaVento = 1;
+
+  jogador = new Jogadores(420, 0, 3, spr_jogador, 0.2); //x, y, lado, sprite, tframe
+  jogador.podeBaixo = true;
+  jogador.podeCima = true;
+  jogador.podeDireita = true;
+  jogador.podeEsquerda = true;
+  jogador.limiteBaixo = canvas.height;
+  jogador.limiteCima = 0;
+  jogador.limiteDireita = canvas.width;
+  jogador.limiteEsquerda = 0;
+
+  morte = new Mortes(140, 250, 3, spr_morte, 0.7);
+      
+  plataformas = [];
+  platChao = []
+  plataformasH = [];
+  plataformasV = [];
+  
+  // o rio do chão
+  platChao.push(new Plataforma(0, 570, 28, spr_rio, 0.2));
+  
+  // teste plataforma Vertical
+  plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 479, 10, spr_pltV2, 10));
+  plataformasH.push(new Plataforma(canvas.width+random(0, canvas.width), 310, 16, spr_pltH1, 2));
+
+  moedas = [];
+  moedasAlturasV = [90, 240, 380, 500];
+  moedasT = 0;
+  moedasSobrou = false;
+  moedasJogadorUpdate = false;
+  moedasJogadorUpdateT = 0;
+
+  // idade
+  idade = 0;
+  idadeT = relog0.segundos;
+
+  podeEnter = false;
+  pagina = 0;
+}
+
+//fundo
+qdSolido(0, 0, canvas.width, canvas.height, 1);
+
+// gerencia moedas
+// controle de população de moedas
+if(moedas.length == 0){
+  var moedaPosX = canvas.width + random(100, canvas.width);
+  var moedasIndice = random(0, moedasAlturasV.length -1);
+  var moedaPosY1 = moedasAlturasV[moedasIndice];
+  var moedaPosY2 = moedasAlturasV[moedasIndice + 2];
+  var qualItem1 = 0;
+  var qualItem2 = 0;
+  if(moedasIndice + 2 > moedasAlturasV.length -1){
+    moedaPosY2 = moedasAlturasV[(moedasIndice + 2)-(moedasAlturasV.length -1) - 1];
+  }
+  qualItem1 = random(0, moedasMax);
+  qualItem2 = random(0, moedasMax);
+  while(qualItem1 == qualItem2){qualItem2 = random(0, moedasMax);}
+  moedas.push(new Moeda(moedaPosX, moedaPosY1, qualItem1));
+  moedas.push(new Moeda(moedaPosX, moedaPosY2, qualItem2));
+  moedasSobrou = false;
+}
+// remove a moeda que não foi pega
+if(moedas.length == 1){
+  if(moedasSobrou == false){
+    moedasSobrou = true;
+    tMoedas = relog0.segundos;
+  }
+  if(relog0.segundos >= tMoedas + 0.3){
+    tMoedas = relog0.segundos;
+    moedas[0].lado--;
+    vento('direita', forcaVento*-4, moedas[0]);
+  }
+  if(moedas[0].lado == 0){moedas[0].pega = true;}
+}
+
+// renderiza moedas
+for(var i = 0; i < moedas.length; i++){
+  vento('direita', forcaVento*1, moedas[i]);
+  moedas[i].desenha();
+}
+
+
+// renderiza o chao
+platChao[0].existe(); // o chao é renderizado separado
+
+// gerencia jogador
+jogador.desenha();
+jogador.controle();
+jogador.gravidade();
+jogador.colisaoMoedas();
+
+// plataformas
+
+// consolidação das plataformas
+plataformas = platChao.concat(plataformasH, plataformasV);
+
+jogador.updateStatus();
+
+if(pagina == 0){
+  txt1.puro('1 of 4.', canvas.width/2, 150, "24px Arial", 'center', 4);
+  txt1.puro('To move, go with RIGHT and LEFT keys', canvas.width/2, 200, "24px Arial", 'center', 4);
+  txt1.puro('or (if you are a pro) use Z and X.', canvas.width/2, 250, "24px Arial", 'center', 4);
+  txt1.puro('To jump use the UP key and', canvas.width/2, 300, "24px Arial", 'center', 4);
+  txt1.puro('use the DOWN key to slide (so fun!).', canvas.width/2, 350, "24px Arial", 'center', 4);
+}
+
+if(pagina == 1){
+  txt1.puro('2 of 4.', canvas.width/2, 150, "24px Arial", 'center', 4);
+  txt1.puro('Speaking of fun, you can WARP', canvas.width/2, 200, "24px Arial", 'center', 4);
+  txt1.puro('LEFT TO RIGHT and RIGHT TO LEFT', canvas.width/2, 250, "24px Arial", 'center', 4);
+  txt1.puro('or simply let the *mysterious*', canvas.width/2, 300, "24px Arial", 'center', 4);
+  txt1.puro('pushing force do the job.', canvas.width/2, 350, "24px Arial", 'center', 4);
+
+  vento('direita', forcaVento*2, jogador);
+  // renderização de plataformas
+
+}
+
+if(pagina == 2){
+  vento('direita', forcaVento*1, jogador);
+  for(var i = 1; i < plataformas.length; i++){
+    plataformas[i].existe();
+    vento('direita', 3, plataformas[i]);
+    }
+  
+  txt1.puro('3 of 4.', canvas.width/2, 150, "24px Arial", 'center', 4);
+  txt1.puro('The passing of years will consume', canvas.width/2, 200, "24px Arial", 'center', 4);
+  txt1.puro("body, mind and soul, but don't worry.", canvas.width/2, 250, "24px Arial", 'center', 4);
+  txt1.puro('Studies show you can collect items to recover', canvas.width/2, 300, "24px Arial", 'center', 4);
+  txt1.puro("and destiny cards to shape your destiny (ha!)", canvas.width/2, 350, "24px Arial", 'center', 4);
+}
+
+if(pagina == 3){
+  
+  vento('direita', forcaVento*1, jogador);
+  for(var i = 1; i < plataformas.length; i++){
+    plataformas[i].existe();
+    vento('direita', 3, plataformas[i]);
+  }
+  morte.existe();
+  morte.persegue();
+  morte.distMorte = 80;
+
+  txtp.pisca('press ENTER to end tutorial', 'press ENTER to end tutorial',
+  '32px Arial', 'center', 1, 4, canvas.width/2, 630, 0.5, 0.5);
+
+  txt1.puro('4 of 4.', canvas.width/2, 150, "24px Arial", 'center', 4);
+  txt1.puro("Finally, avoid touching Death (it sucks life)", canvas.width/2, 200, "24px Arial", 'center', 4);
+  txt1.puro("TO WIN you must COLLECT", canvas.width/2, 250, "24px Arial", 'center', 4);
+  txt1.puro("AT LEAST 32 itens & cards AND THEN DIE.", canvas.width/2, 300, "24px Arial", 'center', 4);
+  txt1.puro("Now, let's have fun!", canvas.width/2, 350, "24px Arial", 'center', 4);
+}
+
+if(pagina < 3){
+  txtp.pisca('press ENTER to continue', 'press ENTER to continue',
+  '32px Arial', 'center', 1, 4, canvas.width/2, 630, 0.5, 0.5);
+  }
+
+  txtp.pisca(' TUTORIAL ', '[ TUTORIAL ]',
+  '32px Arial', 'center', 3, 4, canvas.width/2, 100, 0.5, 0.5);
+
+// controle jogador
+document.onkeyup = function (e) {
+  if(e.code == 'Enter'){
+    pagina++;
+    somConfirma();
+
+    if(pagina == 4){
+      cenaCarregada = false;
+      palco.cena = 2;
+      somConfirma();
+    }
+  }
+}
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+function cena(){
+if(cenaCarregada == false){
+  relog0 = new Relogio();
+  relog0Roda = true;
+  cenaCarregada = true;
+  resetaTxts();
+  gameoverY = -200;
+  podeEnter = false;
+
+  podeMusica = true;
+  criaTemaPrincipal();
+  criaTemaGameOver();
+  palco.musica = "temaPrincipal";
+
+  corFundo = 1;
+
+  coletados = 0;
+
+  ui = new UIs();
+
+  forcaVento = 1;
+
+  jogador = new Jogadores(420, 0, 3, spr_jogador, 0.2); //x, y, lado, tframe
+  jogador.podeBaixo = true;
+  jogador.podeCima = true;
+  jogador.podeDireita = true;
+  jogador.podeEsquerda = true;
+  jogador.limiteBaixo = canvas.height;
+  jogador.limiteCima = 0;
+  jogador.limiteDireita = canvas.width;
+  jogador.limiteEsquerda = 0;
+
+  morte = new Mortes(140, 250, 3, spr_morte, 0.7);
+      
+  plataformas = [];
+  platChao = []
+  plataformasH = [];
+  plataformasV = [];
+  
+  // o rio do chão
+  platChao.push(new Plataforma(0, 570, 28, spr_rio, 0.2));
+  
+  // teste plataforma Vertical
+  plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 70, 10, spr_pltV1, 10));
+  plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 220, 10, spr_pltV2, 10));
+  plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 360, 10, spr_pltV1, 10));
+  plataformasV.push(new Plataforma(canvas.width+random(0, canvas.width), 479, 10, spr_pltV2, 10));
+  
+  // pltAlturas = [160, 310, 450];
+  pltAlturasV = [70, 220, 360, 480];
+  
+  podeCriarCarta = true;
+  criaCarta();
+
+  moedas = [];
+  moedasAlturasV = [90, 240, 380, 500];
+  moedasT = 0;
+  moedasSobrou = false;
+  moedasJogadorUpdate = false;
+  moedasJogadorUpdateT = 0;
+
+  Qdpassantes = [];
+  var qtsQds = 7;
+  for (var i = 0; i < qtsQds; i++){ Qdpassantes.push(new Qdpassante('fundo'));}
+  var qtsQds = 7;
+  for (var i = 0; i < qtsQds; i++){ Qdpassantes.push(new Qdpassante('morte'));}
+
+  // idade
+  tempoPassa = true;
+  idade = 0;
+  idadeT = relog0.segundos;
+}
+
+//fundo
+qdSolido(0, 0, canvas.width, canvas.height, corFundo);
+// fundo passando
+for (var i = 0; i < Qdpassantes.length; i++){Qdpassantes[i].passa();}
+
+// gerencia moedas
+// controle de população de moedas
+if(moedas.length == 0){
+  var moedaPosX = canvas.width + random(100, canvas.width);
+  var moedasIndice = random(0, moedasAlturasV.length -1);
+  var moedaPosY1 = moedasAlturasV[moedasIndice];
+  var moedaPosY2 = moedasAlturasV[moedasIndice + 2];
+  var qualItem1 = 0;
+  var qualItem2 = 0;
+  if(moedasIndice + 2 > moedasAlturasV.length -1){
+    moedaPosY2 = moedasAlturasV[(moedasIndice + 2)-(moedasAlturasV.length -1) - 1];
+  }
+  qualItem1 = random(0, moedasMax);
+  qualItem2 = random(0, moedasMax);
+  while(qualItem1 == qualItem2){qualItem2 = random(0, moedasMax);}
+  moedas.push(new Moeda(moedaPosX, moedaPosY1, qualItem1));
+  moedas.push(new Moeda(moedaPosX, moedaPosY2, qualItem2));
+  moedasSobrou = false;
+}
+// remove a moeda que não foi pega
+if(moedas.length == 1){
+  if(moedasSobrou == false){
+    moedasSobrou = true;
+    tMoedas = relog0.segundos;
+  }
+  if(relog0.segundos >= tMoedas + 0.3){
+    tMoedas = relog0.segundos;
+    moedas[0].lado--;
+    vento('direita', forcaVento*-4, moedas[0]);
+  }
+  if(moedas[0].lado == 0){moedas[0].pega = true;}
+}
+
+// renderiza e move as moedas
+for(var i = 0; i < moedas.length; i++){
+  vento('direita', Math.round(forcaVento), moedas[i]);
+  moedas[i].desenha();
+}
+
+
+// renderiza o chao
+platChao[0].existe(); // o chao é renderizado separado
+
+// gerencia jogador
+vento('direita', forcaVentoJogador*1, jogador);
+jogador.desenha();
+jogador.controle();
+jogador.gravidade();
+jogador.colisaoMorte();
+jogador.colisaoCarta();
+jogador.colisaoMoedas()
+jogador.vento();
+
+// UI
+ui.atualiza();
+ui.desenha();
+
+// gerencia as cartas
+carta.existe();
+carta.estaciona();
+carta.ativada();
+
+// plataformas
+// controle da população de plataformas horizontais
+pltAlturas = [160, 310, 450];
+for(var i = 0; i < plataformasH.length; i++){
+  if(plataformasH[i].renascer){plataformasH.splice(i, 1);}
+}
+if(plataformasH.length == 0 || plataformasH.length <= 12){
+
+  var pltX = canvas.width+100+random(10, canvas.width);
+  var pltY = pltAlturas[random(0, 2)];
+  
+  if(
+    pltAlturasOcupadas[0] == 0 ||
+    pltAlturasOcupadas[1] == 0 ||
+    pltAlturasOcupadas[2] == 0
+    ){
+      if(pltY == pltAlturas[0] && pltAlturasOcupadas[0] == 1){
+        var temp = random(1, 2);
+        pltY = pltAlturas[temp];
+      }
+
+      if(pltY == pltAlturas[1] && pltAlturasOcupadas[1] == 1){
+        var temp = random(1, 2);
+        if(temp == 1){temp = 0;}
+      }
+      
+      if(pltY == pltAlturas[2] && pltAlturasOcupadas[2] == 1){
+        var temp = random(0, 1);
+        pltY = pltAlturas[temp];
+      }
+      
+      if(pltY == pltAlturas[0]){pltAlturasOcupadas[0] = 1}
+      if(pltY == pltAlturas[1]){pltAlturasOcupadas[1] = 1}
+      if(pltY == pltAlturas[2]){pltAlturasOcupadas[2] = 1}
+    }
+
+    if(
+      pltAlturasOcupadas[0] == 1 &&
+      pltAlturasOcupadas[1] == 1 &&
+      pltAlturasOcupadas[2] == 1
+    ){
+      pltAlturasOcupadas[0] = 0;
+      pltAlturasOcupadas[1] = 0;
+      pltAlturasOcupadas[2] = 0;
+    }
+  
+  plats = [spr_pltH1, spr_pltH1];
+  plats = plats[random(0,1)];
+  // plats = plats[1];
+  plataformasH.push(new Plataforma(pltX, pltY, 16, plats, 2));
+}
+
+// consolidação das plataformas
+plataformas = platChao.concat(plataformasH, plataformasV);
+
+// renderização de plataformas
+for(var i = 1; i < plataformas.length; i++){
+  plataformas[i].existe()
+  vento('direita', forcaVento*3, plataformas[i]);
+}
+
+jogador.updateStatus();
+// ui.desenhaColetados();
+
+// gerencia as cartas
+carta.existe();
+carta.estaciona();
+carta.ativada();
+
+// gerencia morte
+morte.persegue();
+morte.existe();
+
+//gameover
+if(jogador.vida <= 0){
+  
+  jogador.podeBaixo = false;
+  jogador.podeCima = false;
+  jogador.podeDireita = false;
+  jogador.podeEsquerda = false;
+  jogador.tFrame = 10000;
+  if(palco.musica != "temaGameOver"){palco.musica = "temaGameOver";}
+
+  tempoPassa = false;
+  forcaVento = 0;
+  forcaVentoJogador = 0;
+
+  plataformas[0].tFrame = 500;
+
+  ui.gameover();
+}
+
+// controle jogador
+document.onkeyup = function (e) {
+  if(e.code == 'Enter' && podeEnter){
+    somConfirma();
+    cenaCarregada = false;
+    palco.cena = 2;   
+    }
+  }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// função preSetup
+
+function preSetup(){
+  if(preSetupCarregado == false){
+    palco = new Palco(0,'tema01');
+    relog0 = new Relogio();
+    // fundo0 = new Sprite(0, 0, 8000, spr_fundo0, 5.0);
+    //relogSimulacao = new Relogio();
+    txt1 = new Texto;
+    txt2 = new Texto;
+    txt3 = new Texto;
+    txt4 = new Texto;
+    txt5 = new Texto;
+    txt6 = new Texto;
+    txtp = new Texto;
+    plataformas = [];
+    moedas = [];
+    colisao = []; 
+    qdpassantes_fundo = [];
+    qdpassantes_frente = [];
+    tEspera = 0;
+    podeMusica = false;
+    preSetupCarregado = true;
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// função Main
+
+function main() {
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  preSetup();
+  relog0.clockInterno();
+  // fundo0.desenha();
+  palco.chamaCena();
+  if(podeMusica == true){palco.tocaMusica()};
+  
+  requestAnimationFrame(main);
+
+}
+
+main();
+
+</script>
+
+</body>
+</html>
